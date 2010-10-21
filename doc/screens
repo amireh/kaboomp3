@@ -1,0 +1,18 @@
+1) Intro Screen:
+  * list libraries
+  * switch to library
+  * add a new library
+
+2) Add Library:
+  * prompt for title
+
+3) Library:
+  * show library info
+  * switch to preview
+  * customize library
+  
+4) Customize:
+  * list a form with library preferences
+
+5) Preview:
+  * simulate the organized library  
