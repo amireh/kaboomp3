@@ -9,6 +9,7 @@ namespace :db do
 
   desc "Generates a blank migration for a model"
   task :generate, :model do |t, args|
+    
     Linguistics.use( :en )
   
     path = File.join(ENV['APP_ROOT'], "data", "migrations")

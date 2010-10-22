@@ -1,115 +1,86 @@
 #!/usr/bin/ruby
 
+ENV['APP_ROOT'] ||= File.expand_path(File.dirname(__FILE__))
+$LOAD_PATH << File.join(ENV['APP_ROOT'], 'app')
+
 require 'rubygems'
 require 'fileutils'
 require 'active_record'
 require 'qt4'
 require 'qtuitools'
-
-
-ENV['APP_ROOT'] ||= File.expand_path(File.dirname(__FILE__))
-
-$LOAD_PATH << File.join(ENV['APP_ROOT'], 'app')
-
-require File.join("lib", "utility")
+require File.join(ENV['APP_ROOT'], "lib", "utility")
 
 Qt::debug_level=Qt::DebugLevel::Minimal
 
 module Pixy
   class Pandemonium
-  
     include Pixy::Utility
 
-    @views = { 
-      :intro => nil
-    }
-    
-    @controllers = {
-      :intro => nil
-    }
-    
-    @ui_loader = nil
-    
-    attr_reader :window, :qt_app
-    
+    attr_reader :ui
+  
     def setup
 
+      @ui = { 
+        :app => nil,
+        :loader => nil,
+        :window => nil,
+        :controllers => { 
+          :intro => nil
+        },
+        :views => { 
+          :intro => nil
+        }
+      }
+      
       # initialize Qt & the UI loader
       log "initializing Qt"
-      @qt_app = Qt::Application.new(ARGV)
-      @ui_loader = Qt::UiLoader.new
+      @ui[:app] = Qt::Application.new(ARGV)
+      @ui[:loader] = Qt::UiLoader.new
       
-      ActiveRecord::Base.establish_connection(
-        :adapter => 'sqlite3',
-        :database =>  'data/pan_ar.db'
-      )
+      # connect to our database
+      ActiveRecord::Base.establish_connection(YAML::load(File.open(File.join(ENV['APP_ROOT'], "config", "database.yml"))))
       
-      # Models
+      # load models
       log "mounting models"
-      require File.join(ENV['APP_ROOT'], 'app', 'models', 'model')
-      Dir.new(File.join(ENV['APP_ROOT'], 'app', 'models')).entries.each do |file|
-        require "models/#{file.gsub('.rb', '')}" if ruby_script?(file)
+      require File.join(path_to("models"), 'model')
+      Dir.new(path_to("models")).entries.each do |file|
+        require File.join(path_to("models"), file.gsub('.rb', '')) if ruby_script?(file)
       end
-
-      #[Library, Repository, Genre, Artist, Album, Track].each do |model| model.auto_upgrade! end
 
       # create our controllers
       log "loading controllers"
-      Dir.new(File.join(ENV['APP_ROOT'], 'app', 'controllers')).entries.each do |file|
-        require File.join("controllers", file.gsub('.rb', '')) if ruby_script?(file) 
+      Dir.new(path_to("controllers")).entries.each do |file|
+        require File.join(path_to("controllers"), file.gsub('.rb', '')) if ruby_script?(file) 
       end
 
-      # load our views
-      @views = {
-        :intro => Qt::File.new(File.join("app", "views", "main_window.ui"))
+      # load our main window
+      sheet = Qt::File.new(File.join(path_to("views"), "main_window.ui"))
+      sheet.open(Qt::File::ReadOnly)
+      @ui[:window] = @ui[:loader].load(sheet, nil)
+      sheet.close
+
+      @ui[:views] = {
+        :intro => File.join(path_to("views"), "intro_screen.ui")
       }
       
-      @controllers = {
-        :intro => IntroController.new(@window, @views[:intro], @qt_app, @ui_loader)
+      @ui[:controllers] = {
+        :intro => IntroController.new(@ui[:app], @ui[:loader], @ui[:window], @ui[:views][:intro])
       }
       
       log "set up!"
     end
 
-    def run
+    def run!
       begin
-        setup    
-        @controllers[:intro].attach
+        setup
+        @ui[:window].show
+        @ui[:controllers][:intro].attach
       rescue Exception => e
         log("#{e.class}: #{e.message}")
         exit
       end
       
-      @qt_app.exec
+      @ui[:app].exec
     end
   end # class Pandemonium
 end # module Pixy
-
-=begin
-
-
-a = Qt::Application.new(ARGV)
-
-#if ARGV.length == 0
-#  exit
-#end
-
-#if ARGV.length == 1
-  file = Qt::File.new(File.join("app", "views", "main_window.ui"))
-  file.open(Qt::File::ReadOnly)
-
-  loader = Qt::UiLoader.new
-  window = loader.load(file, nil)
-  file.close
-  if (window.nil?)
-    print "Error. Window is nil.\n"
-    exit
-  end
-  window.show
-  a.connect(a, SIGNAL('lastWindowClosed()'), a, SLOT('quit()'))
-  a.exec
-#end
-=end
-
-app = Pixy::Pandemonium.new
-app.run()

@@ -4,52 +4,64 @@ module Pixy
   class InvalidTransition < Exception; end
   class InvalidView < Exception; end
   
-  class Controller
+  class Controller < Qt::Object
     
     include Pixy::Utility
     
-    attr_reader :window, :view, :app, :loader
+    attr_reader :app, :loader, :window, :view, :sheet, :overlays
     
+    #################################################################################
     # loads the controller
     # 
     # arguments:
-    # => window: handle to the main display window to which view will be attached
-    # => view: path to the Qt UI file (expectedly under app/views)
-    # => app: handle to the Qt App delegate
-    def initialize(window, view, app, loader)
+    # => window: handle to the main display window to which @view will be attached
+    # => loader: handle to Qt::UiLoader which allows us to load .ui sheets on runtime
+    # => app: handle to the Qt App delegate, will be used for binding slots
+    #
+    # WARNING: @view MUST be set by children with the path to the .ui sheet
+    #
+    def initialize(app, loader, window, sheet)
+      super()
+      
       @window = window
-      @view = view
+      @sheet = sheet
       @app = app
       @loader = loader
+      @view = nil
+
     end
     
     # is this controller ready to manage its view?
     def loaded?
-      return @window || (@app && @view)
+      return @view || (@app && @window && @loader && @sheet)
     end
     
     # is the view currently displayed?
     def attached?
-      return @window && @window.visible?
+      return @view && @view.visible?
     end
     
+    #################################################################################
     # attaches view to display window
     #
     # call this when you need to "activate" this controller's view;
     # the separation of controller loading and the attachment of its
     # view provides flexibility
+    # 
     def attach
       raise InvalidState if !loaded? # make sure we're populated
 
-      unless attached?  
-        @view.open(Qt::File::ReadOnly)
-        @window = @loader.load(@view, @window)
-        @view.close
+      unless attached?
+        @sheet = Qt::File.new(@sheet)
+        @sheet.open(Qt::File::ReadOnly)
+        @view = @loader.load(@sheet, @window)
+        @sheet.close
         
         raise InvalidView if @window.nil?
       end
       
-      @window.show and bind
+      @view.show
+      bind
     end
 
     # switches from current view to the destination controller's
@@ -66,7 +78,7 @@ module Pixy
     # removes current view from display; called prior to a transition
     def detach
       unbind
-      @window.hide
+      @view.hide
     end
     
     # hooks slots to signals
@@ -78,6 +90,12 @@ module Pixy
     # NOTE: must be implemented by children
     def unbind
     end
-        
+    
+    def attachOverlay(overlay)
+    end
+    
+    def detachOverlay(overlay)
+    end
+    
   end
 end

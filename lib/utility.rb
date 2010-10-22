@@ -1,7 +1,7 @@
 module Pixy
 
   class InvalidView < Exception; end
-  
+
   module Utility
     @@init = false
     @@log_path = File.join(ENV['APP_ROOT'], 'log')
@@ -9,8 +9,8 @@ module Pixy
   
     def log(msg, options = {})
       if !@@init then
-        #@@logger = File.open((File.join(@@log_path, "debug.log")), "w+")
-        @@logger = File.open(0)
+        @@logger = File.open((File.join(@@log_path, "debug.log")), "w+")
+        #@@logger = File.open()
       	@@logger.write("+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\n")
       	@@logger.write("+                           Pandemonium                             +\n")
       	@@logger.write("+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\n")
@@ -21,16 +21,26 @@ module Pixy
       #level = options.has_key?(:level) ? options[:level] : "INFO"
       #options[:level] ||= "INFO"
       
-      @@logger.write( "+ #{msg}\n" )
-      @@logger.flush
+      #@@logger.write( "+ #{msg}\n" )
+      #@@logger.flush
+      puts "+ #{msg}"
     end
   
     # returns whether filename matches %STRING%.rb
     def ruby_script?(filename)
       (filename =~ /\A[^\.].(.)*.(\.rb)\z/) != nil
     end
-  end
-  
-end
-
-#Pixy.quickfix
+    
+    def path_to(resource)
+      case resource
+        when "controllers" then File.join(ENV['APP_ROOT'], "app", "controllers")
+        when "models" then File.join(ENV['APP_ROOT'], "app", "models")
+        when "views" then File.join(ENV['APP_ROOT'], "app", "views")
+        when "tasks" then File.join(ENV['APP_ROOT'], "lib", "tasks")
+        when "logs" then File.join(ENV['APP_ROOT'], "log")
+        when "migrations" then File.join(ENV['APP_ROOT'], "data", "migrations")
+      end
+    end
+    
+  end # module Utility
+end # module Pixy
