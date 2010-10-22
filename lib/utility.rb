@@ -7,9 +7,10 @@ module Pixy
     @@log_path = File.join(ENV['APP_ROOT'], 'log')
     @@logger = nil
   
-    def log(msg)
+    def log(msg, options = {})
       if !@@init then
-        @@logger = File.open((File.join(@@log_path, "debug.log")), "w+")
+        #@@logger = File.open((File.join(@@log_path, "debug.log")), "w+")
+        @@logger = File.open(0)
       	@@logger.write("+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\n")
       	@@logger.write("+                           Pandemonium                             +\n")
       	@@logger.write("+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\n")
@@ -18,8 +19,9 @@ module Pixy
       end
     
       #level = options.has_key?(:level) ? options[:level] : "INFO"
+      #options[:level] ||= "INFO"
       
-      @@logger.write( "+ #{caller.class.name.gsub("Pixy::", "")}: #{msg}\n" )
+      @@logger.write( "+ #{msg}\n" )
       @@logger.flush
     end
   

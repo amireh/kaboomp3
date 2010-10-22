@@ -6,6 +6,9 @@
 
 module Pixy
   class Track < Model
+    belongs_to :album
+    belongs_to :library
+=begin
     include DataMapper::Resource
   
     storage_names[:default] = 'tracks'
@@ -20,5 +23,6 @@ module Pixy
 
     property :created_at, DateTime
     property :created_on, Date
+=end
   end
 end

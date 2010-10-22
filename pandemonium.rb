@@ -2,10 +2,7 @@
 
 require 'rubygems'
 require 'fileutils'
-require 'datamapper'
-require 'dm-core'
-require 'dm-migrations'
-require 'do_sqlite3'
+require 'active_record'
 require 'qt4'
 require 'qtuitools'
 
@@ -38,35 +35,26 @@ module Pixy
     def setup
 
       # initialize Qt & the UI loader
-      puts "initializing Qt"
+      log "initializing Qt"
       @qt_app = Qt::Application.new(ARGV)
       @ui_loader = Qt::UiLoader.new
       
-      #puts ENV['APP_ROOT']
-      puts Dir.pwd
-      #DataMapper.setup(:default, "sqlite3://#{Dir.pwd}/test.sqlite3")
-      DataMapper.setup(:default, "sqlite3://#{Dir.pwd}/test.db")
-=begin
-      DataMapper.setup(:default, {
-        :adapter  => 'mysql',
-        :host     => 'localhost',
-        :username => 'root',
-        :password => '',
-        :database => "pandemonium"
-      })
-=end
+      ActiveRecord::Base.establish_connection(
+        :adapter => 'sqlite3',
+        :database =>  'data/pan_ar.db'
+      )
+      
       # Models
-      puts "mounting models"
+      log "mounting models"
       require File.join(ENV['APP_ROOT'], 'app', 'models', 'model')
       Dir.new(File.join(ENV['APP_ROOT'], 'app', 'models')).entries.each do |file|
-        puts "loading #{file}" if ruby_script?(file)
         require "models/#{file.gsub('.rb', '')}" if ruby_script?(file)
       end
 
-      [Library, Repository, Genre, Artist, Album, Track].each do |model| model.auto_upgrade! end
+      #[Library, Repository, Genre, Artist, Album, Track].each do |model| model.auto_upgrade! end
 
       # create our controllers
-      puts "loading controllers"
+      log "loading controllers"
       Dir.new(File.join(ENV['APP_ROOT'], 'app', 'controllers')).entries.each do |file|
         require File.join("controllers", file.gsub('.rb', '')) if ruby_script?(file) 
       end
@@ -80,7 +68,7 @@ module Pixy
         :intro => IntroController.new(@window, @views[:intro], @qt_app, @ui_loader)
       }
       
-      puts "set up!"
+      log "set up!"
     end
 
     def run
@@ -88,7 +76,7 @@ module Pixy
         setup    
         @controllers[:intro].attach
       rescue Exception => e
-        puts("#{e.class}: #{e.message}")
+        log("#{e.class}: #{e.message}")
         exit
       end
       

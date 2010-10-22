@@ -4,6 +4,9 @@
 
 module Pixy
   class Library < Model
+    has_many :repositories
+    has_many :tracks
+=begin
     include DataMapper::Resource
   
     storage_names[:default] = 'libraries'
@@ -17,5 +20,6 @@ module Pixy
     
     property :created_at, DateTime
     property :created_on, Date
+=end
   end
 end

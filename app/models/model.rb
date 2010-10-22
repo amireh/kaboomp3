@@ -1,4 +1,4 @@
 module Pixy
-  class Model < Qt::Object
+  class Model < ActiveRecord::Base
   end
 end
