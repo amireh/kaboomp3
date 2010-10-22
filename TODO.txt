@@ -1,0 +1,3 @@
+Screens:
+  Intro:
+    * add emblem grid to library creation overlay

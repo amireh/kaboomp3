@@ -9,14 +9,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>820</width>
+    <width>840</width>
     <height>660</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>800</width>
-    <height>600</height>
+    <width>840</width>
+    <height>660</height>
    </size>
   </property>
   <property name="focusPolicy">
@@ -53,20 +53,30 @@ color: rgb(20, 107, 149);</string>
      <string>Pandemonium</string>
     </property>
    </widget>
-   <widget class="QStackedWidget" name="stackedWidget">
+   <widget class="QStackedWidget" name="contentView">
     <property name="geometry">
      <rect>
-      <x>0</x>
-      <y>100</y>
-      <width>820</width>
-      <height>520</height>
+      <x>10</x>
+      <y>60</y>
+      <width>840</width>
+      <height>580</height>
      </rect>
     </property>
-    <property name="currentIndex">
-     <number>0</number>
+    <property name="minimumSize">
+     <size>
+      <width>840</width>
+      <height>580</height>
+     </size>
     </property>
-    <widget class="QWidget" name="page"/>
-    <widget class="QWidget" name="page_2"/>
+    <property name="maximumSize">
+     <size>
+      <width>16777215</width>
+      <height>580</height>
+     </size>
+    </property>
+    <property name="currentIndex">
+     <number>-1</number>
+    </property>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -74,7 +84,7 @@ color: rgb(20, 107, 149);</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>820</width>
+     <width>840</width>
      <height>22</height>
     </rect>
    </property>

@@ -10,8 +10,6 @@ require 'qt4'
 require 'qtuitools'
 require 'utility'
 
-Qt::debug_level=Qt::DebugLevel::Minimal
-
 module Pixy
   class Pandemonium
     include Pixy::Utility
@@ -21,7 +19,7 @@ module Pixy
     def setup
 
       @ui = { 
-        :app => nil,
+        :qt => nil,
         :loader => nil,
         :window => nil,
         :controllers => { 
@@ -34,8 +32,9 @@ module Pixy
       
       # initialize Qt & the UI loader
       log "initializing Qt"
-      @ui[:app] = Qt::Application.new(ARGV)
+      @ui[:qt] = Qt::Application.new(ARGV)
       @ui[:loader] = Qt::UiLoader.new
+      Qt::debug_level=Qt::DebugLevel::Minimal
       
       # connect to our database
       ActiveRecord::Base.establish_connection(YAML::load(File.open(File.join(ENV['APP_ROOT'], "config", "database.yml"))))
@@ -54,17 +53,16 @@ module Pixy
       end
 
       # load our main window
-      sheet = Qt::File.new(File.join(path_to("views"), "main_window.ui"))
-      sheet.open(Qt::File::ReadOnly)
-      @ui[:window] = @ui[:loader].load(sheet, nil)
-      sheet.close
+      @ui[:window] = load_view(File.join(path_to("views"), "main_window.ui"), nil, @ui[:loader])
 
       @ui[:views] = {
-        :intro => File.join(path_to("views"), "intro_screen.ui")
+        :intro => File.join(path_to("views"), "intro_screen.ui"),
+        :library => File.join(path_to("views"), "library_screen.ui")
       }
       
       @ui[:controllers] = {
-        :intro => IntroController.new(@ui[:app], @ui[:loader], @ui[:window], @ui[:views][:intro])
+        :intro => IntroController.new(@ui, @ui[:views][:intro]),
+        :library => LibraryController.new(@ui, @ui[:views][:library])
       }
       
       log "set up!"
@@ -80,7 +78,7 @@ module Pixy
         exit
       end
       
-      @ui[:app].exec
+      @ui[:qt].exec
     end
   end # class Pandemonium
 end # module Pixy

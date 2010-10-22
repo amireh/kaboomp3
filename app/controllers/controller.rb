@@ -5,10 +5,9 @@ module Pixy
   class InvalidView < Exception; end
   
   class Controller < Qt::Object
-    
     include Pixy::Utility
     
-    attr_reader :app, :loader, :window, :view, :sheet, :overlays
+    attr_reader :ui, :view, :overlays
     
     #################################################################################
     # loads the controller
@@ -20,20 +19,27 @@ module Pixy
     #
     # WARNING: @view MUST be set by children with the path to the .ui sheet
     #
-    def initialize(app, loader, window, sheet)
+    def initialize(ui, sheet_path)
       super()
       
-      @window = window
-      @sheet = sheet
-      @app = app
-      @loader = loader
-      @view = nil
+      @ui = ui
 
+      raise InvalidState if !loaded?
+        
+      # load the view
+      @view = load_view(sheet_path, @ui[:window].findChild(Qt::StackedWidget, "contentView"), @ui[:loader])
+
+      raise InvalidView if @view.nil?
+      
+      @overlays = { }
+      
+      # bind our event handlers
+      bind
     end
-    
-    # is this controller ready to manage its view?
+
+    # validates handles passed to us which we need to operate 
     def loaded?
-      return @view || (@app && @window && @loader && @sheet)
+      true unless @ui[:qt].nil? or @ui[:window].nil? or @ui[:loader].nil?
     end
     
     # is the view currently displayed?
@@ -52,16 +58,9 @@ module Pixy
       raise InvalidState if !loaded? # make sure we're populated
 
       unless attached?
-        @sheet = Qt::File.new(@sheet)
-        @sheet.open(Qt::File::ReadOnly)
-        @view = @loader.load(@sheet, @window)
-        @sheet.close
-        
-        raise InvalidView if @window.nil?
+        @view.show
       end
-      
-      @view.show
-      bind
+
     end
 
     # switches from current view to the destination controller's
@@ -90,12 +89,7 @@ module Pixy
     # NOTE: must be implemented by children
     def unbind
     end
-    
-    def attachOverlay(overlay)
-    end
-    
-    def detachOverlay(overlay)
-    end
+
     
   end
 end

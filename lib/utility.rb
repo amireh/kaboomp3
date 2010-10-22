@@ -36,10 +36,24 @@ module Pixy
         when "controllers" then File.join(ENV['APP_ROOT'], "app", "controllers")
         when "models" then File.join(ENV['APP_ROOT'], "app", "models")
         when "views" then File.join(ENV['APP_ROOT'], "app", "views")
+        when "overlays" then File.join(ENV['APP_ROOT'], "app", "views", "overlays")
         when "tasks" then File.join(ENV['APP_ROOT'], "lib", "tasks")
         when "logs" then File.join(ENV['APP_ROOT'], "log")
         when "migrations" then File.join(ENV['APP_ROOT'], "data", "migrations")
       end
+    end
+    
+    # ----
+    # helper method to load a Qt UI view
+    # requires path to the .ui file, parent widget, and a handle to a Qt::UiLoader instance
+    #
+    def load_view(path, parent, loader)
+      sheet = Qt::File.new(path)
+      sheet.open(Qt::File::ReadOnly)
+      view = loader.load(sheet, parent)
+      sheet.close
+      
+      view
     end
     
   end # module Utility
