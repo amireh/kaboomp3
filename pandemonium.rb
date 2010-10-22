@@ -1,14 +1,14 @@
 #!/usr/bin/ruby
 
 ENV['APP_ROOT'] ||= File.expand_path(File.dirname(__FILE__))
-$LOAD_PATH << File.join(ENV['APP_ROOT'], 'app')
+$LOAD_PATH << File.join(ENV['APP_ROOT'], 'app') << File.join(ENV['APP_ROOT'], 'lib')
 
 require 'rubygems'
 require 'fileutils'
 require 'active_record'
 require 'qt4'
 require 'qtuitools'
-require File.join(ENV['APP_ROOT'], "lib", "utility")
+require 'utility'
 
 Qt::debug_level=Qt::DebugLevel::Minimal
 
