@@ -1,8 +1,5 @@
-require 'dm-core'
-
 module Pixy
-  
-  class Repository
+  class Repository < Model
     include DataMapper::Resource
   
     storage_names[:default] = 'repositories'

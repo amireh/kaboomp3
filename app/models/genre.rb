@@ -1,8 +1,5 @@
-require 'dm-core'
-
 module Pixy
-  
-  class Genre
+  class Genre < Model
     include DataMapper::Resource
   
     storage_names[:default] = 'genres'
@@ -11,6 +8,5 @@ module Pixy
     
     property :id, Serial
     property :title, String, :length => 255, :required => true
-    
   end
 end

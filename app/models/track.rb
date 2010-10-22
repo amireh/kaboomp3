@@ -4,12 +4,8 @@
 # their manipulation history; say when a track is "organized", its earlier state
 # is kept track of here for later rollbacks if needed
 
-require 'dm-core'
-require 'dm-timestamps'
-
 module Pixy
-  
-  class Track
+  class Track < Model
     include DataMapper::Resource
   
     storage_names[:default] = 'tracks'
@@ -24,6 +20,5 @@ module Pixy
 
     property :created_at, DateTime
     property :created_on, Date
-    
   end
 end

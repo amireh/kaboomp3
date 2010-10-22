@@ -1,9 +1,5 @@
-require 'dm-core'
-require 'dm-timestamps'
-
 module Pixy
-  
-  class Artist
+  class Artist < Model
     include DataMapper::Resource
   
     storage_names[:default] = 'artists'
@@ -16,6 +12,5 @@ module Pixy
     
     property :created_at, DateTime
     property :created_on, Date
-    
   end
 end

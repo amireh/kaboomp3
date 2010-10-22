@@ -1,13 +1,9 @@
 # The Library maintains a list of all its Tracks and
 # has some preferences the user could customize.
 # Libraries are populated with the tracks by the "Inspector"
- 
-require 'dm-core'
-require 'dm-timestamps'
 
 module Pixy
-  
-  class Library
+  class Library < Model
     include DataMapper::Resource
   
     storage_names[:default] = 'libraries'
@@ -21,6 +17,5 @@ module Pixy
     
     property :created_at, DateTime
     property :created_on, Date
-    
   end
 end
