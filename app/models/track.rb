@@ -5,7 +5,7 @@
 # is kept track of here for later rollbacks if needed
 
 module Pixy
-  class Track < Model
+  class Track < ActiveRecord::Base
     belongs_to :album
     belongs_to :library
 =begin

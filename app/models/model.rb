@@ -1,4 +1,4 @@
 module Pixy
-  class Model < ActiveRecord::Base
+  class Model
   end
 end

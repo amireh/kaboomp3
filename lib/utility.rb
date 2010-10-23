@@ -4,11 +4,11 @@ module Pixy
 
   module Utility
     @@init = false
-    @@log_path = File.join(ENV['APP_ROOT'], 'log')
     @@logger = nil
   
     def log(msg, options = {})
       if !@@init then
+        @@log_path = File.join(ENV['APP_ROOT'], 'log')
         @@logger = File.open((File.join(@@log_path, "debug.log")), "w+")
         #@@logger = File.open()
       	@@logger.write("+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\n")

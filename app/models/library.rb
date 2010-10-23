@@ -3,7 +3,7 @@
 # Libraries are populated with the tracks by the "Inspector"
 
 module Pixy
-  class Library < Model
+  class Library < ActiveRecord::Base
     has_many :repositories
     has_many :tracks
 =begin

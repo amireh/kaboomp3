@@ -1,5 +1,5 @@
 module Pixy
-  class Repository < Model
+  class Repository < ActiveRecord::Base
     belongs_to :library
 =begin
     include DataMapper::Resource

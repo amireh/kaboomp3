@@ -1,3 +1,4 @@
 Screens:
   Intro:
     * add emblem grid to library creation overlay
+    * disable dialog unless library title field isn't empty in library creation overlay

@@ -89,7 +89,10 @@ module Pixy
     # NOTE: must be implemented by children
     def unbind
     end
-
+    
+    def clear_view
+      
+    end
     
   end
 end

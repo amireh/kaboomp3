@@ -54,7 +54,7 @@ module Pixy
 
       # load our main window
       @ui[:window] = load_view(File.join(path_to("views"), "main_window.ui"), nil, @ui[:loader])
-
+      
       @ui[:views] = {
         :intro => File.join(path_to("views"), "intro_screen.ui"),
         :library => File.join(path_to("views"), "library_screen.ui")

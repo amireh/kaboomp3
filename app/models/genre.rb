@@ -1,5 +1,5 @@
 module Pixy
-  class Genre < Model
+  class Genre < ActiveRecord::Base
     has_many :albums
 =begin
     include DataMapper::Resource
