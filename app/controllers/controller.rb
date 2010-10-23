@@ -7,7 +7,7 @@ module Pixy
   class Controller < Qt::Object
     include Pixy::Utility
     
-    attr_reader :ui, :view, :overlays
+    attr_reader :ui, :view, :overlays, :pages
     
     #################################################################################
     # loads the controller
@@ -27,11 +27,15 @@ module Pixy
       raise InvalidState if !loaded?
         
       # load the view
-      @view = load_view(sheet_path, @ui[:window].findChild(Qt::StackedWidget, "contentView"), @ui[:loader])
-
-      raise InvalidView if @view.nil?
+      @view = load_view(sheet_path, nil, @ui[:loader])
       
-      @overlays = { }
+      raise InvalidView if @view.nil?
+
+      # attach it to our main view
+      @ui[:window].findChild(Qt::StackedWidget, "contentView").addWidget(@view)
+      @ui[:window].findChild(Qt::StackedWidget, "contentView").setCurrentWidget(@view)
+      
+      @overlays, @pages = { }
       
       # bind our event handlers
       bind

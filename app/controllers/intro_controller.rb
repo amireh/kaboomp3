@@ -1,63 +1,81 @@
 module Pixy
   class IntroController < Controller
-  
-    slots :quit, :show_create_library, :create_library, :cancel_create_library, :goto_library
+    
+    slots :quit, :show_library_form, :create_library, :cancel_create_library, :goto_library
 
     def initialize(ui, path)
       super(ui, path)
       
+      
+      # load our pages
+      page_paths = { 
+        :library_add  => File.join(path_to("views"), "intro", "library_add.ui"), 
+        :library_form => File.join(path_to("views"), "intro", "library_form.ui"),
+        :library_list => File.join(path_to("views"), "intro", "library_list.ui")
+      }
+      
+      @pages = { }
+      intro_view = @view.findChild(Qt::StackedWidget, "introView")
+      page_paths.each_pair do |page_name, path|
+        @pages[page_name] = load_view(path, intro_view, @ui[:loader])
+        intro_view.addWidget(@pages[page_name])
+      end
+      
       # load our overlays
-      overlay_path = File.join(path_to("overlays"), "create_library.ui")
-      @overlays[:create_library] = load_view(overlay_path, @ui[:window], @ui[:loader])
+      #overlay_path = File.join(path_to("overlays"), "create_library.ui")
+      #@overlays[:create_library] = load_view(overlay_path, @ui[:window], @ui[:loader])
       
       # and bind their event handlers
-      bind_overlays
+      bind_pages
       
-      patch_ui
+
+      
+      #intro_view.setCurrentWidget(@pages[:library_add])
     end
     
     def attach
       super()
       
-      update
+      if Library.find(:all).empty? then
+        switch_page(@pages[:library_add])
+      else
+        @ui[:controllers][:library].library = Library.first
+        transition(@ui[:controllers][:library])
+        #list_library(Library.first)
+      end
     end
     
     protected
     
     def bind
-      connect(
-        @view.findChild(Qt::PushButton, "button_createLibrary"), 
-        SIGNAL('clicked()'), 
-        self, 
-        SLOT('show_create_library()')
-      )
-  
-      connect(
-        @view.findChild(Qt::PushButton, "button_test"), 
-        SIGNAL('clicked()'),
-        self, 
-        SLOT('goto_library()')
-      )
-      
+          
     end
     
-    def bind_overlays
+    def bind_pages
       connect(
-        @overlays[:create_library], 
+        @pages[:library_add].findChild(Qt::PushButton, "button_createLibrary"), 
+        SIGNAL('clicked()'), 
+        self, 
+        SLOT('show_library_form()')
+      )
+      
+      connect(
+        @pages[:library_form], 
         SIGNAL('accepted()'), 
         self, 
         SLOT('create_library()')
       )
       
       connect(
-        @overlays[:create_library], 
+        @pages[:library_form], 
         SIGNAL('rejected()'), 
         self, 
         SLOT('cancel_create_library()')
-      )      
+      )
     end
     
     def update
+=begin
       #clear_view
       scrollArea = @view.findChild(Qt::ScrollArea, "scrollArea")
       scrollArea.widgetResizable=true
@@ -99,21 +117,19 @@ module Pixy
       #puts "Layout => #{layout.inspect}"
       #puts "----"
       #puts "Layout children =>: #{layout.children.inspect}"
+=end
     end
 
-    def patch_ui
-      
-    end
     
     private
     
-    def show_create_library
-      @overlays[:create_library].show
+    def show_library_form
+      switch_page(@pages[:library_form])
     end
     
     def create_library
       form = { :title => "", :emblem => "" }
-      form[:title] = @overlays[:create_library].findChild(Qt::LineEdit, "libraryTitleLineEdit").text
+      form[:title] = @pages[:library_form].findChild(Qt::LineEdit, "text_libraryTitle").text
       
       log "Error! Library title field is empty!!" and return if form[:title].empty?
       
@@ -124,18 +140,30 @@ module Pixy
         log "There was a problem creating library with input: #{form.inspect}"
       end
       
-      update
+      list_library(library)
     end
     
     def cancel_create_library
       log "cancelled !"
+      switch_page(@pages[:library_add])
     end
     
     def goto_library
       transition(@ui[:controllers][:library])
     end
     
-        
+    def switch_page(page)
+      @view.findChild(Qt::StackedWidget, "introView").setCurrentWidget(page)
+    end
+    
+    def list_library(library)
+      @pages[:library_list].findChild(Qt::Label, "label_libraryTitle").text = library.title
+      #@pages[:library_list].findChild(Qt::Label, "text_libraryInfo").text = "Stuff here"
+      
+      switch_page(@pages[:library_list])
+      
+      
+    end
+    
   end # class IntroController
 end # module Pixy
-

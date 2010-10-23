@@ -23,10 +23,12 @@ module Pixy
         :loader => nil,
         :window => nil,
         :controllers => { 
-          :intro => nil
+          :intro => nil,
+          :library => nil
         },
         :views => { 
-          :intro => nil
+          :intro => nil,
+          :library => nil
         }
       }
       
@@ -56,8 +58,8 @@ module Pixy
       @ui[:window] = load_view(File.join(path_to("views"), "main_window.ui"), nil, @ui[:loader])
       
       @ui[:views] = {
-        :intro => File.join(path_to("views"), "intro_screen.ui"),
-        :library => File.join(path_to("views"), "library_screen.ui")
+        :intro => File.join(path_to("views"), "intro", "libraries.ui"),
+        :library => File.join(path_to("views"), "library", "library.ui")
       }
       
       @ui[:controllers] = {
