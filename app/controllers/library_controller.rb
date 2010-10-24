@@ -3,13 +3,15 @@ module Pixy
   
   class LibraryController < Controller
 
-    attr_writer :library
+    attr_accessor :library
+    attr_reader :state
     
     slots 'update_sample_path()',
           'choose_library_path()',
           'save_preferences()',
           'back_to_libraries()',
-          'switch_page(int)'
+          'switch_page(int)',
+          'user_agreement()'
 
     public
     
@@ -53,7 +55,10 @@ module Pixy
         #puts "loaded action view: #{page} => #{@pages[:actions][page].inspect}"
       end
       
-      
+      @tabs = {
+        :preview => @canvas.findChild(Qt::Widget, "tabPreview"),
+        :preferences => @canvas.findChild(Qt::Widget, "tabPreferences")
+      }
       @radio_buttons = {
         :naming => {
           :by_title   => @pages[:preferences].findChild(Qt::RadioButton, "nameByTitle"),
@@ -71,7 +76,8 @@ module Pixy
           :by_genre   => @pages[:preferences].findChild(Qt::CheckBox, "sortByGenre"),
           :by_artist  => @pages[:preferences].findChild(Qt::CheckBox, "sortByArtist"),
           :by_album   => @pages[:preferences].findChild(Qt::CheckBox, "sortByAlbum")
-        }
+        },
+        :changes_confirmed => @pages[:preview].findChild(Qt::CheckBox, "changesConfirmed")
       }
       
       @text_fields = {
@@ -85,7 +91,10 @@ module Pixy
         :organize => @pages[:actions][:preview].findChild(Qt::PushButton, "organize"),
         :back_to_libraries => @views[:master].findChild(Qt::PushButton, "backToLibraries")
       }
-            
+      
+      @tree = @pages[:preview].findChild(Qt::TreeView, "treeView")
+      
+      @state = "customizing"
     end
 
     def attach
@@ -93,9 +102,11 @@ module Pixy
       
       raise InvalidState if @library.nil?
       
-      force_defaults and populate
-      update_sample_path
+      force_defaults
+      populate
       
+      update
+        
     end
     
     protected
@@ -104,8 +115,9 @@ module Pixy
       
       @radio_buttons[:storage][:soft_copy].checked = true
       @radio_buttons[:naming][:by_title].checked = true
-      @buttons[:update].enabled = false
       @buttons[:organize].enabled = false
+      
+      @canvas.setCurrentWidget(@tabs[:preferences])
       
     end
     
@@ -123,6 +135,8 @@ module Pixy
         connect(box, SIGNAL('toggled(bool)'), self, SLOT('update_sample_path()'))
       end
       
+      connect(@check_boxes[:changes_confirmed], SIGNAL('toggled(bool)'), self, SLOT('user_agreement()'))
+      
       connect(@buttons[:choosePath], SIGNAL('clicked()'), self, SLOT('choose_library_path()'))
       connect(@buttons[:update], SIGNAL('clicked()'), self, SLOT('save_preferences()'))
       connect(@buttons[:back_to_libraries], SIGNAL('clicked()'), self, SLOT('back_to_libraries()'))
@@ -133,6 +147,26 @@ module Pixy
     
     private
     
+    def update
+      
+      if @state == "customizing"
+        update_sample_path
+      end
+      
+      if @state == "previewing"
+        fsm = Qt::FileSystemModel.new
+        fsm.readOnly = true
+        fsm.resolveSymlinks = false
+        fsm.rootPath = @library.path
+        @tree.model = fsm
+        @tree.rootIndex = fsm.index(@library.path)
+        @tree.header.hideSection(1)
+        @tree.header.hideSection(2)
+        @tree.header.hideSection(3)
+      end
+      
+    end
+    
     def switch_page(page_id)
       raise InvalidArgument unless page_id.is_a?(Integer)
       
@@ -141,8 +175,13 @@ module Pixy
 
       raise InvalidState if page.nil?
       
+      @state = "previewing" if @canvas.currentWidget.objectName == @tabs[:preview].objectName
+      @state = "customizing" if @canvas.currentWidget.objectName == @tabs[:preferences].objectName
+            
       page_name = page_name_from_id(page_id)
       @views[:actions].setCurrentWidget(@pages[:actions][page_name.to_sym])
+      
+      update
     end
     
     # gets our local identifier of in_page from the actual widget
@@ -161,7 +200,6 @@ module Pixy
       # find out filename from radio button group :naming
       filename = ""
       @radio_buttons[:naming].each_pair { |key, button| filename = button.text and break if button.checked? }
-      #@check_boxes[:sorting].each_pair { |key, box| path = File.join(path, "#{box.text}s") if box.checked? }
       path = File.join(path, "Genre") if @check_boxes[:sorting][:by_genre].checked?
       path = File.join(path, "Artist") if @check_boxes[:sorting][:by_artist].checked?
       path = File.join(path, "Album") if @check_boxes[:sorting][:by_album].checked?
@@ -215,6 +253,14 @@ module Pixy
       
       @radio_buttons[:storage][:soft_copy].checked = true if !@library.hard_copy?
       @radio_buttons[:storage][:hard_copy].checked = true if @library.hard_copy?
+    end
+    
+    def user_agreement
+      if @check_boxes[:changes_confirmed].checked? then
+        @buttons[:organize].enabled = true
+      else
+        @buttons[:organize].enabled = false
+      end
     end
     
   end # class LibraryController

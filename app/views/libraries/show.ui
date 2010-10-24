@@ -82,13 +82,13 @@
 color: #ffffff;
 font-weight: bold;
 font-size: 14px;
-	border-image: url(:/120x120/images/buttons/round/120x120/Green.png);
+	border-image: url(:/80x80/images/buttons/round/80x80/Gray.png);
+}
+QPushButton:hover {
+	border-image: url(:/80x80/images/buttons/round/80x80/Silver.png);
 }
 QPushButton:pressed {
-	border-image: url(:/120x120/images/buttons/round/120x120/Red.png);
-}
-QPushButton:disabled {
-	border-image: url(:/120x120/images/buttons/round/120x120/Gray.png);
+	border-image: url(:/80x80/images/buttons/round/80x80/Green.png);
 }</string>
           </property>
           <property name="text">

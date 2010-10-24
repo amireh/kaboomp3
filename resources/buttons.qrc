@@ -1,10 +1,16 @@
 <RCC>
   <qresource prefix="library_buttons">
+    <file>images/buttons/library/Black2.png</file>
+    <file>images/buttons/library/Silver2.png</file>
     <file>images/buttons/library/Black.png</file>
     <file>images/buttons/library/Silver.png</file>
   </qresource>
+  <qresource prefix="buttons">
+    <file>images/buttons/add.png</file>
+  </qresource>
   <qresource prefix="logo">
     <file>images/logo/devil.png</file>
+    <file>images/logo/devil2.png</file>
   </qresource>
   <qresource prefix="220x220">
     <file>images/buttons/round/220x220/Gray.png</file>

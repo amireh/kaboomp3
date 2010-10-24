@@ -1,2 +1,2 @@
 adapter: sqlite3
-database: data/pandemonium.sqlite3
+database: data/kaboom.sqlite3
