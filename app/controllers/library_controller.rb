@@ -1,30 +1,56 @@
 module Pixy
+  class InvalidArgument < Exception; end
+  
   class LibraryController < Controller
 
     attr_writer :library
     
     slots 'update_sample_path()',
           'choose_library_path()',
-          'save_preferences()'
-    
-    
+          'save_preferences()',
+          'back_to_libraries()',
+          'switch_page(int)'
+
     public
     
     def initialize(ui, path)
       super(ui, path)
       
-      @library = Library.first
-      
+      @canvas = @views[:master].findChild(Qt::TabWidget, "viewLibrary")
+
+      @pages.merge!({ :actions => { } })
+      @views.merge!({
+        :preferences => @views[:master].findChild(Qt::StackedWidget, "viewPreferences"),
+        :preview => @views[:master].findChild(Qt::StackedWidget, "viewPreview"),
+        :actions => @views[:master].findChild(Qt::StackedWidget, "viewActions")
+      })
+            
       # load our pages
-      page_paths = { 
-        :preferences  => File.join(path_to("views"), "library", "preferences.ui")
+      paths = { 
+        :pages => {
+          :preferences => File.join(path_to("views"), "libraries", "_preferences.ui"),
+          :preview => File.join(path_to("views"), "libraries", "_preview.ui")        
+        },
+        :actions => {
+          :preferences => File.join(path_to("views"), "libraries", "_preferences_actions.ui"),
+          :preview => File.join(path_to("views"), "libraries", "_preview_actions.ui")          
+        }
       }
       
-      @pages = { }
-      intro_view = @view.findChild(Qt::StackedWidget, "viewPreferences")
-      page_paths.each_pair do |page_name, path|
-        @pages[page_name] = load_view(path, intro_view, @ui[:loader])
-        intro_view.addWidget(@pages[page_name])
+      # populate pages and load them
+      paths[:pages].each_pair do |page, path|
+
+        @pages[page] = load_view(path, @views[page], @ui[:loader])
+        @views[page].addWidget(@pages[page])
+        
+        #puts "added #{@pages[page].objectName} to #{@views[page].objectName}"
+      end
+      
+      # populate action pages and load them
+      paths[:actions].each_pair do |page, path|
+        @pages[:actions][page] = load_view(path, @views[page], @ui[:loader])
+        @views[:actions].addWidget(@pages[:actions][page])
+        #puts "loaded action view: #{page} => #{@pages[:actions][page].inspect}"
       end
       
       
@@ -52,22 +78,23 @@ module Pixy
         :library_path => @pages[:preferences].findChild(Qt::LineEdit, "libraryPath"),
         :sample_path  => @pages[:preferences].findChild(Qt::LineEdit, "samplePath")
       }
-      
+          
       @buttons = {
         :choosePath => @pages[:preferences].findChild(Qt::ToolButton, "chooseLibraryPath"),
-        :update => @pages[:preferences].findChild(Qt::PushButton, "updatePreferences")
+        :update => @pages[:actions][:preferences].findChild(Qt::PushButton, "updatePreferences"),
+        :organize => @pages[:actions][:preview].findChild(Qt::PushButton, "organize"),
+        :back_to_libraries => @views[:master].findChild(Qt::PushButton, "backToLibraries")
       }
-      
-      bind_pages
+            
     end
 
     def attach
       super()
       
+      raise InvalidState if @library.nil?
+      
       force_defaults and populate
       update_sample_path
-      
-      switch_page(@pages[:preferences])
       
     end
     
@@ -77,14 +104,16 @@ module Pixy
       
       @radio_buttons[:storage][:soft_copy].checked = true
       @radio_buttons[:naming][:by_title].checked = true
+      @buttons[:update].enabled = false
+      @buttons[:organize].enabled = false
       
     end
     
     def bind
-
+      
     end
     
-    def bind_pages
+    def bind_deferred
 
       @radio_buttons[:naming].each_pair do |key, button|
         connect(button, SIGNAL('toggled(bool)'), self, SLOT('update_sample_path()'))
@@ -96,13 +125,34 @@ module Pixy
       
       connect(@buttons[:choosePath], SIGNAL('clicked()'), self, SLOT('choose_library_path()'))
       connect(@buttons[:update], SIGNAL('clicked()'), self, SLOT('save_preferences()'))
+      connect(@buttons[:back_to_libraries], SIGNAL('clicked()'), self, SLOT('back_to_libraries()'))
+      
+      connect(@canvas, SIGNAL('currentChanged(int)'), self, SLOT('switch_page(int)'))
     end
     
     
     private
     
-    def switch_page(page)
-      @view.findChild(Qt::StackedWidget, "viewPreferences").setCurrentWidget(page)
+    def switch_page(page_id)
+      raise InvalidArgument unless page_id.is_a?(Integer)
+      
+      # get the actual page widget using the index page_id
+      page = @canvas.widget(page_id)
+
+      raise InvalidState if page.nil?
+      
+      page_name = page_name_from_id(page_id)
+      @views[:actions].setCurrentWidget(@pages[:actions][page_name.to_sym])
+    end
+    
+    # gets our local identifier of in_page from the actual widget
+    def page_name_from_id(page_id)
+      case page_id
+      when @canvas.indexOf(@canvas.findChild(Qt::Widget, "tabPreferences"))
+        "preferences"
+      when @canvas.indexOf(@canvas.findChild(Qt::Widget, "tabPreview"))
+        "preview"
+      end
     end
     
     def update_sample_path()
@@ -144,6 +194,10 @@ module Pixy
         :naming => naming,
         :hard_copy => @radio_buttons[:storage][:hard_copy].checked?
       )
+    end
+    
+    def back_to_libraries()
+      transition(@ui[:controllers][:intro])
     end
     
     def populate()

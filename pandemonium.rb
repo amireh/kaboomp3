@@ -29,6 +29,9 @@ module Pixy
         :views => { 
           :intro => nil,
           :library => nil
+        },
+        :resources => {
+          :buttons => "buttons.rcc"
         }
       }
       
@@ -37,6 +40,12 @@ module Pixy
       @ui[:qt] = Qt::Application.new(ARGV)
       @ui[:loader] = Qt::UiLoader.new
       Qt::debug_level=Qt::DebugLevel::Minimal
+      
+      # load resources
+      @ui[:resources].each_pair { |key, path| 
+        log "loading resource #{path}"; 
+        Qt::Resource.registerResource(File.join(ENV['APP_ROOT'], "resources", path)) 
+      }
       
       # connect to our database
       ActiveRecord::Base.establish_connection(YAML::load(File.open(File.join(ENV['APP_ROOT'], "config", "database.yml"))))
@@ -58,13 +67,13 @@ module Pixy
       @ui[:window] = load_view(File.join(path_to("views"), "main_window.ui"), nil, @ui[:loader])
       
       @ui[:views] = {
-        :intro => File.join(path_to("views"), "intro", "libraries.ui"),
-        :library => File.join(path_to("views"), "library", "library.ui")
+        :intro => File.join(path_to("views"), "libraries", "index.ui"),
+        :libraries => File.join(path_to("views"), "libraries", "show.ui")
       }
       
       @ui[:controllers] = {
         :intro => IntroController.new(@ui, @ui[:views][:intro]),
-        :library => LibraryController.new(@ui, @ui[:views][:library])
+        :libraries => LibraryController.new(@ui, @ui[:views][:libraries])
       }
       
       log "set up!"
@@ -84,3 +93,5 @@ module Pixy
     end
   end # class Pandemonium
 end # module Pixy
+
+Pixy::Pandemonium.new.run!

@@ -4,10 +4,31 @@ module Pixy
   class InvalidTransition < Exception; end
   class InvalidView < Exception; end
   
+  #################################################################################
+  # Controllers have a set of views, controlled by a master view.
+  # Views can have pages as children elements, which in turn can contain
+  # other elements and pages as well.
+  # Children can subclass the Controller to not only bind their handlers, but
+  # also define their subviews / subpages.
+  #
+  # Loading a controller happens in two stages:
+  #
+  # @ Creation:
+  # => the controller loads its views and pages, obtains handles to their
+  # => elements, and optionally, binds its main view's signal emitters
+  #
+  # @ Attachment to display:
+  # => mainly deals with forcing default values to view elements, and binding
+  # => the rest of the elements (see bind_deferred()), and carrying out 
+  # => controller-specific logic
+  #
+  # Controllers can transition between each other on fixed signals, which 
+  # invokes their attach() routine.
+  
   class Controller < Qt::Object
     include Pixy::Utility
     
-    attr_reader :ui, :view, :overlays, :pages
+    attr_reader :ui, :canvas, :pages, :views
     
     #################################################################################
     # loads the controller
@@ -23,21 +44,26 @@ module Pixy
       super()
       
       @ui = ui
-
+      
       raise InvalidState if !loaded?
-        
+      
+      @views = { }
+      @pages = { }
+      
       # load the view
-      @view = load_view(sheet_path, nil, @ui[:loader])
-      
-      raise InvalidView if @view.nil?
+      @views = { 
+        :master => load_view(sheet_path, nil, @ui[:loader])
+      }
 
-      # attach it to our main view
-      @ui[:window].findChild(Qt::StackedWidget, "contentView").addWidget(@view)
-      @ui[:window].findChild(Qt::StackedWidget, "contentView").setCurrentWidget(@view)
+      raise InvalidView if @views[:master].nil?
+
+      # make sure our we're hidden
+      @views[:master].hide
       
-      @overlays, @pages = { }
+      # add us to the main view's pages
+      @ui[:window].findChild(Qt::StackedWidget, "viewContent").addWidget(@views[:master])
       
-      # bind our event handlers
+      # finally, bind our event handlers
       bind
     end
 
@@ -48,7 +74,7 @@ module Pixy
     
     # is the view currently displayed?
     def attached?
-      return @view && @view.visible?
+      return @views[:master] && @views[:master].visible?
     end
     
     #################################################################################
@@ -61,10 +87,12 @@ module Pixy
     def attach
       raise InvalidState if !loaded? # make sure we're populated
 
-      unless attached?
-        @view.show
-      end
+      #unless attached?
+        @ui[:window].findChild(Qt::StackedWidget, "viewContent").setCurrentWidget(@views[:master])
+      #end
 
+      # subviews elements may be bound here
+      bind_deferred
     end
 
     # switches from current view to the destination controller's
@@ -80,8 +108,7 @@ module Pixy
     
     # removes current view from display; called prior to a transition
     def detach
-      unbind
-      @view.hide
+      @views[:master].hide
     end
     
     # hooks slots to signals
@@ -89,13 +116,8 @@ module Pixy
     def bind
     end
     
-    # unhooks signals from slots
-    # NOTE: must be implemented by children
-    def unbind
-    end
-    
-    def clear_view
-      
+    # will be called on view attachment; ie after subviews are loaded
+    def bind_deferred
     end
     
   end

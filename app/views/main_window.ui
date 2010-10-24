@@ -9,13 +9,13 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>840</width>
+    <width>920</width>
     <height>660</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>840</width>
+    <width>920</width>
     <height>660</height>
    </size>
   </property>
@@ -52,40 +52,10 @@
      <number>12</number>
     </property>
     <property name="bottomMargin">
-     <number>12</number>
+     <number>0</number>
     </property>
     <item row="0" column="0">
-     <widget class="QLabel" name="label">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>40</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="minimumSize">
-       <size>
-        <width>0</width>
-        <height>40</height>
-       </size>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">font-size: 34px;
-font-weight: bold;
-color: rgb(20, 107, 149);</string>
-      </property>
-      <property name="text">
-       <string>Pandemonium</string>
-      </property>
-      <property name="scaledContents">
-       <bool>false</bool>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignHCenter|Qt::AlignTop</set>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="0">
-     <widget class="QStackedWidget" name="contentView">
+     <widget class="QStackedWidget" name="viewContent">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
         <horstretch>0</horstretch>
@@ -110,6 +80,12 @@ color: rgb(20, 107, 149);</string>
         <height>0</height>
        </size>
       </property>
+      <property name="styleSheet">
+       <string notr="true"/>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::NoFrame</enum>
+      </property>
       <property name="currentIndex">
        <number>-1</number>
       </property>
@@ -122,7 +98,7 @@ color: rgb(20, 107, 149);</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>840</width>
+     <width>920</width>
      <height>22</height>
     </rect>
    </property>

@@ -1,0 +1,33 @@
+<RCC>
+  <qresource prefix="library_buttons">
+    <file>images/buttons/library/Black.png</file>
+    <file>images/buttons/library/Silver.png</file>
+  </qresource>
+  <qresource prefix="logo">
+    <file>images/logo/devil.png</file>
+  </qresource>
+  <qresource prefix="220x220">
+    <file>images/buttons/round/220x220/Gray.png</file>
+    <file>images/buttons/round/220x220/Green.png</file>
+    <file>images/buttons/round/220x220/Red.png</file>
+    <file>images/buttons/round/220x220/Silver.png</file>
+  </qresource>
+  <qresource prefix="120x120">
+    <file>images/buttons/round/120x120/Gray.png</file>
+    <file>images/buttons/round/120x120/Green.png</file>
+    <file>images/buttons/round/120x120/Red.png</file>
+    <file>images/buttons/round/120x120/Silver.png</file>
+  </qresource>
+  <qresource prefix="80x80">
+    <file>images/buttons/round/80x80/Gray.png</file>
+    <file>images/buttons/round/80x80/Green.png</file>
+    <file>images/buttons/round/80x80/Red.png</file>
+    <file>images/buttons/round/80x80/Silver.png</file>
+  </qresource>
+  <qresource prefix="60x60">
+    <file>images/buttons/round/60x60/Gray.png</file>
+    <file>images/buttons/round/60x60/Green.png</file>
+    <file>images/buttons/round/60x60/Red.png</file>
+    <file>images/buttons/round/60x60/Silver.png</file>
+  </qresource>
+</RCC>
