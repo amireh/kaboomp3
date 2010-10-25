@@ -32,7 +32,7 @@ module Pixy
     include Pixy::Utility
 
     attr_reader :stats, :errors, :simulating
-    attr_accessor :tracking_errors, :tracking_stats, :showing_progress
+    attr_accessor :tracking_errors, :tracking_stats, :showing_progress, :library
     
     public
     
@@ -61,7 +61,7 @@ module Pixy
     
     def simulate(library, dest)
       @stats[:timer][:begin] = Time.now
-      
+      @library = library
       @simulating = true
       process_library(library, dest)
 
@@ -98,6 +98,7 @@ module Pixy
     # returns a list of all the MP3 files in the given directory as Track objects
     def tracks_in_folder(dir)
       tracks = []
+      #log "finding mp3s in #{dir}"
       Dir["#{dir}/*.mp3"].each do |file|
 
         #log "processing #{file}" 
@@ -106,7 +107,7 @@ module Pixy
           #@stats[:nr_tracks] += 1 if tracking_stats?
           
 					begin
-	          track = Track.new(file)
+	          track = Track.new(file, @library)
 	          tracks.push(track) if track.sane?
 					rescue Exception => e
 						track_error(e) if tracking_errors?
@@ -155,6 +156,7 @@ module Pixy
       
       log "Organizer called for some blowing up action, about to start traversing directories in:"
       log "Library: #{library.title} @ #{library.path}"
+      
       if showing_progress?
         log "determining number of tracks in library..."
         @stats[:nr_tracks] = find_nr_tracks(library)
@@ -191,17 +193,19 @@ module Pixy
         #log "#{tracks.count} tracks found"
         #i = 1
         tracks.each do |track|
-        
+          #log "\tprocessing #{track.inspect}"
           begin
             dest = {
-              :dir => File.join(dest_dir, track.genre, track.artist, track.album),
+              :dir => File.join(dest_dir),
               :path => nil
             }
+            dest[:dir] = File.join(dest[:dir], track.genre) if @library.sort_by_genre?
+            dest[:dir] = File.join(dest[:dir], track.artist) if @library.sort_by_artist?
+            dest[:dir] = File.join(dest[:dir], track.album) if @library.sort_by_album?
             dest[:path] = File.join(dest[:dir], track.title + '.mp3')
           
             # don't do anything if destination is occupied
             if File::exists?(dest[:path]) 
-              log "\tTrack exists at #{dest[:path]}!"
               @errors[:dest_exists] += 1
               next
             end
@@ -213,11 +217,11 @@ module Pixy
               #FileUtils.cp(track.filepath, dest[:path]) 
             end
             
-            #log "\t#{i}. #{track.inspect}"
+            log "\t#{i}. #{track.inspect}"
             #@successes += 1
             #i += 1
           rescue Exception => e
-            log "faced an issue: #{e.message}"
+            #log "faced an issue: #{e.message}"
             @stats[:failures] += 1 if tracking_stats?
 						track_error(e) if tracking_errors?
           end
@@ -227,15 +231,11 @@ module Pixy
           end
         end
         
-        #Dir.new(dir).entries.each do |entry|
-        Dir["*/"].each do |entry|
+        # add subdirectories to the queue
+        Dir["*/"].each { |entry| dirs.push("#{Dir.pwd}/#{entry}") }
+
           # skip '.', '..' or any other file, we need directories
           #next unless File::directory?(entry) and (entry =~ /\A[\.]{1,2}\z/) == nil
-                    
-          dirs.push("#{Dir.pwd}/#{entry}")
-          #log "\t+ added directory to queue: #{dirs.last.gsub(library.path + "/", '')}"
-          
-        end
         
       end
     end

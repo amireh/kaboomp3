@@ -6,6 +6,11 @@ module Pixy
   class Library < ActiveRecord::Base
     has_many :repositories
     has_many :tracks
+    
+    ByTitle=0
+    ByArtistAndTitle=1
+    ByAlbumAndTitle=2
+    
 =begin
     include DataMapper::Resource
   

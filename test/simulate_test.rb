@@ -20,4 +20,6 @@ temp = File.join(ENV['APP_ROOT'], "test", "simulations", "snapshot_#{Time.now.to
 FileUtils.mkdir_p(temp)
 
 organizer = Pixy::Organizer.new()
-organizer.simulate(Pixy::Library.first, temp)
+organizer.showing_progress=false
+stats = organizer.simulate(Pixy::Library.first, temp)
+puts stats.inspect

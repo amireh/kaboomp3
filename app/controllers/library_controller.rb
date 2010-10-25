@@ -132,6 +132,7 @@ module Pixy
     
     def update_progress(stepper, step)
       @pbars[:preview].value = (stepper / step)
+      @ui[:qt].processEvents
     end
     
     protected
@@ -242,6 +243,14 @@ module Pixy
       
       naming = ""
       @radio_buttons[:naming].each_pair { |key, button| naming = button.text and break if button.checked? }
+      naming = case naming
+      when "Track Title.mp3"
+        0
+      when "Artist - Track Title.mp3"
+        1
+      when "Album - Track Title.mp3"
+        2
+      end
       
       @library.update_attributes(
         :path => @text_fields[:library_path].text,
@@ -275,9 +284,9 @@ module Pixy
       @check_boxes[:sorting][:by_album].checked = true if @library.sort_by_album?
       
       # naming radio button
-      @radio_buttons[:naming][:by_title].checked = true if @library.naming == "Track Title.mp3"
-      @radio_buttons[:naming][:by_artist].checked = true if @library.naming == "Artist - Track Title.mp3"
-      @radio_buttons[:naming][:by_album].checked = true if @library.naming == "Album - Track Title.mp3"
+      @radio_buttons[:naming][:by_title].checked = true if @library.naming == 0
+      @radio_buttons[:naming][:by_artist].checked = true if @library.naming == 1
+      @radio_buttons[:naming][:by_album].checked = true if @library.naming == 2
       
       @radio_buttons[:storage][:soft_copy].checked = true if !@library.hard_copy?
       @radio_buttons[:storage][:hard_copy].checked = true if @library.hard_copy?
@@ -301,7 +310,7 @@ module Pixy
       end
       
 			failed = false
-			@pages[:preview].enabled = false
+			#@pages[:preview].enabled = false
 			@pbars[:preview].value = 0
 			begin
 	      @preview_stats = Pandemonium.instance.organizer.simulate(library, temp)

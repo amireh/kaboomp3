@@ -4,6 +4,8 @@
 # their manipulation history; say when a track is "organized", its earlier state
 # is kept track of here for later rollbacks if needed
 
+require File.join("app", "models", "library")
+
 module Pixy
   class Track < ActiveRecord::Base
 		include Pixy::Utility
@@ -35,9 +37,9 @@ module Pixy
       :genre => "Uncategorized"
     }
     
-    def initialize(file_path)
+    def initialize(file_path, library)
       @filepath = file_path
-  
+      @library = library
       prepare
     end
 
@@ -65,6 +67,7 @@ module Pixy
         tag = ID3Lib::Tag.new(@filepath)
 
         @title = tag.title
+        # force default if title is missing in tag
         @title = File::basename(@filepath, "mp3") if @title.nil? or @title.strip.nil? or @title.is_binary_data?
   
         @album = tag.album
@@ -80,19 +83,28 @@ module Pixy
         end
         
         # if we have a string genre, assign it, otherwise, force default
-        @genre ||= tag.genre
+        #@genre ||= tag.genre
         @genre = @@defaults[:genre] if @genre.nil? or @genre.is_binary_data?
-  
+
         # clean up title field: remove trailing and leading whitespace, 
         # quotes, and brackets, and convert underscores into hyphens
         @title.strip.gsub(/\.'"()/, '').gsub('_', ' ')
 
-        @title = "#{@artist} - #{@title}" unless @artist == @@defaults[:artist]
-
-        @genre.capitalize!
-        @title.split.each { |word| word.capitalize! }.join(" ")
-        @album.split.each { |word| word.capitalize! }.join(" ")
-        @artist.split.each { |word| word.capitalize! }.join(" ")
+        # obey Library preferences regarding file names
+        @title = case @library.naming 
+        when Library::ByTitle
+          @title
+        when Library::ByArtistAndTitle
+          "#{@artist} - #{@title}"
+        when Library::ByAlbumAndTitle
+          "#{@album} - #{@title}"
+        end
+        
+        # capitalize each word of each field
+        @genre = @genre.downcase.split.each { |word| word.capitalize! }.join(" ")
+        @title = @title.split.each { |word| word.capitalize! }.join(" ")
+        @album = @album.split.each { |word| word.capitalize! }.join(" ")
+        @artist = @artist.split.each { |word| word.capitalize! }.join(" ")
     
       #rescue Exception => e
       #  @title, @artist, @album, @genre = nil

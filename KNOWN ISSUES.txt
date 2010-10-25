@@ -1,4 +1,6 @@
 * (fixed) adding a library might result in adding more than 1
 * (fixed) library population is erratic / not working properly
 * (fixed) slots are being called an increasing number of times per signal
-* OS X: progress bar not being updated by steps 
+* (fixed) OS X: progress bar not being updated by steps 
+* OS X: Organizer crashes alot with no conceivable cause:
+  # (update) : the issue lies in corrupt mp3 files when opened by ID3Lib::Tag
