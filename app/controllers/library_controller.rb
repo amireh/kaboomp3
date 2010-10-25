@@ -216,7 +216,7 @@ module Pixy
     def choose_library_path()
       directory = Qt::FileDialog.getExistingDirectory(@ui[:window], 
                                   "Find Files", 
-                                  Qt::Dir.currentPath(), 
+                                  @library.path || Qt::Dir.currentPath(), 
                                   Qt::FileDialog::DontResolveSymlinks |
                                   Qt::FileDialog::ShowDirsOnly)
       if !directory.nil?
@@ -279,6 +279,7 @@ module Pixy
       
 			failed = false
 			@pages[:preview].enabled = false
+			@pbars[:preview].value = 0
 			begin
 	      @preview_stats = Pandemonium.instance.organizer.simulate(library, temp)
 			rescue InvalidPath => e

@@ -159,11 +159,18 @@ module Pixy
         log "determining number of tracks in library..."
         @stats[:nr_tracks] = find_nr_tracks(library)
         log "#{@stats[:nr_tracks]} tracks found"
+        
+        if @stats[:nr_tracks] == 0 
+          return empty_library 
+        end
+        
         if @stats[:nr_tracks] < 100
           @step = (100 / @stats[:nr_tracks]).floor
         else
           @step = (@stats[:nr_tracks] / 100).ceil
         end
+        log "progress step is #{@step}"
+        
       end
       
       @stepper = 0
@@ -231,10 +238,10 @@ module Pixy
         end
         
       end
-      
-
     end
-    
+      
+    def empty_library
+      log "its an empty library"
+    end
   end
-
 end
