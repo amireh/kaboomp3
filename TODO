@@ -1,9 +1,16 @@
-* (DONE) ability to delete a library
-* (DONE) preview simulation
-* the actual organizing
-* (DONE) interactive buttons should have their focus policies set to NONE
-* clean out resources
-* (DONE) "choose library path" should default to existing library path otherwise current directory
-* implement varying sorting techniques: light, normal, aggressive
-* Organizer should obey library sorting preferences
-* add SuperGenres
+# RV1
+  * (DONE) ability to delete a library
+  * (DONE) preview simulation
+  * the actual organizing
+  * (DONE) interactive buttons should have their focus policies set to NONE
+  * (DONE) clean out resources
+  * (DONE) "choose library path" should default to existing library path otherwise current directory
+  * Organizer should obey library sorting preferences
+
+# RV2
+  * implement varying sorting techniques: light, normal, aggressive
+  * add SuperGenres
+
+# RV3
+  * "smart" correction of id3 tags
+  * signature-based identification

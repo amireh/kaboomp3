@@ -5,7 +5,8 @@ module Pixy
   
     def log(msg, options = {})
       if !@@init then
-        #@@log_path = File.join(ENV['APP_ROOT'], 'log')
+        @@log_path = File.join(ENV['APP_ROOT'], 'log')
+				if !File.exists?(@@log_path) then FileUtils.mkdir_p(@@log_path) end
         #@@logger = File.open((File.join(@@log_path, "debug.log")), "w+")
         @@logger = STDOUT
         #@@logger = File.open()
