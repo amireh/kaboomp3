@@ -103,7 +103,9 @@ module Pixy
       }
       
       @dialogs = {
-        :remove_library => Qt::MessageBox.new
+        :remove_library => Qt::MessageBox.new,
+        :preview_failed => Qt::MessageBox.new,
+        :retry_preview => Qt::MessageBox.new
       }
       
       @dialogs[:remove_library].text = "Are you sure you want to remove this library?"
@@ -113,8 +115,31 @@ module Pixy
       @dialogs[:remove_library].addButton(Qt::MessageBox::Yes)
       @dialogs[:remove_library].addButton(Qt::MessageBox::No)
       @dialogs[:remove_library].defaultButton = @dialogs[:remove_library].buttons.last
+
+      @dialogs[:preview_failed].text = "Sorry! Preview failed."
+      @dialogs[:preview_failed].informativeText = "" \
+      "There was an error simulating your sorted library. " \
+      "If this problem persists, please contact us by visitng our website: " \
+      "http://kaboom.amireh.net."
+      @dialogs[:preview_failed].windowTitle = "Preview Failed"
+      @dialogs[:preview_failed].icon = Qt::MessageBox::Critical
+      @dialogs[:preview_failed].addButton(Qt::MessageBox::Ok)
+      @dialogs[:preview_failed].defaultButton = @dialogs[:preview_failed].buttons.first
+      
+      @dialogs[:retry_preview].text = "Sorry! Preview failed."
+      @dialogs[:retry_preview].informativeText = "" \
+      "Please make sure you have write privileges to " \
+      "the directory in which kaBoom resides, and try again. "
+      @dialogs[:retry_preview].windowTitle = "Preview Failed"
+      @dialogs[:retry_preview].icon = Qt::MessageBox::Warning
+      @dialogs[:retry_preview].addButton(Qt::MessageBox::Ok)
+      @dialogs[:retry_preview].defaultButton = @dialogs[:preview_failed].buttons.first
       
       @tree = @pages[:preview].findChild(Qt::TreeView, "treeView")
+      
+      @fsm = Qt::FileSystemModel.new
+      @fsm.readOnly = true
+      @fsm.resolveSymlinks = false
       
       @state = "customizing"
     end
@@ -166,7 +191,11 @@ module Pixy
       connect(@buttons[:organize], SIGNAL('clicked()'), self, SLOT('do_organize()'))
       connect(@buttons[:preview], SIGNAL('clicked()'), self, SLOT('do_preview()'))
       connect(@buttons[:back_to_libraries], SIGNAL('clicked()'), self, SLOT('back_to_libraries()'))
+      
       connect(@dialogs[:remove_library].buttons.first, SIGNAL('clicked()'), self, SLOT('do_remove_library()'))
+      #connect(@dialogs[:retry_preview].buttons.first, SIGNAL('clicked()'), self, SLOT('do_remove_library()'))
+      #connect(@dialogs[:preview_failed].buttons.first, SIGNAL('clicked()'), self, SLOT('do_remove_library()'))
+      
       connect(@canvas, SIGNAL('currentChanged(int)'), self, SLOT('switch_page(int)'))
       
       @bound = true
@@ -245,11 +274,11 @@ module Pixy
       @radio_buttons[:naming].each_pair { |key, button| naming = button.text and break if button.checked? }
       naming = case naming
       when "Track Title.mp3"
-        0
+        Library::ByTitle
       when "Artist - Track Title.mp3"
-        1
+        Library::ByArtistAndTitle
       when "Album - Track Title.mp3"
-        2
+        Library::ByAlbumAndTitle
       end
       
       @library.update_attributes(
@@ -260,6 +289,7 @@ module Pixy
         :naming => naming,
         :hard_copy => @radio_buttons[:storage][:hard_copy].checked?
       )
+      
     end
     
     def remove_library()
@@ -284,9 +314,9 @@ module Pixy
       @check_boxes[:sorting][:by_album].checked = true if @library.sort_by_album?
       
       # naming radio button
-      @radio_buttons[:naming][:by_title].checked = true if @library.naming == 0
-      @radio_buttons[:naming][:by_artist].checked = true if @library.naming == 1
-      @radio_buttons[:naming][:by_album].checked = true if @library.naming == 2
+      @radio_buttons[:naming][:by_title].checked = true if @library.naming == Library::ByTitle
+      @radio_buttons[:naming][:by_artist].checked = true if @library.naming == Library::ByArtistAndTitle
+      @radio_buttons[:naming][:by_album].checked = true if @library.naming == Library::ByAlbumAndTitle
       
       @radio_buttons[:storage][:soft_copy].checked = true if !@library.hard_copy?
       @radio_buttons[:storage][:hard_copy].checked = true if @library.hard_copy?
@@ -301,41 +331,40 @@ module Pixy
     end
     
     def do_preview
-      temp = File.join(ENV['APP_ROOT'], "tmp", "snapshot_#{Time.now.to_i}")
-      FileUtils.mkdir_p(temp)
+      begin
+        temp = File.join(ENV['APP_ROOT'], "tmp", "snapshot_#{Time.now.to_i}")
+        FileUtils.mkdir_p(temp)
       
-      if !File.exists?(temp)
-        log "Could not create temp library!"
-        return
+        if !File.exists?(temp) || !File.writable?(temp)
+          raise PreviewFailed.new(true), "destination does not exist or is not writable!"
+        end
+      
+  			failed = false
+  			@pbars[:preview].value = 0
+  			
+  			begin
+  	      @preview_stats = KaBoom.instance.organizer.simulate(library, temp)
+  			rescue InvalidPath
+  			rescue InvalidArgument
+  			rescue Exception => e
+  				raise PreviewFailed(false), "some error occured while simulating: #{e.message}"
+  			end
+  			
+  	  rescue PreviewFailed => e
+  	    if e.repairable
+  	      @dialogs[:retry_preview].show
+        else
+  		    @dialogs[:preview_failed].show
+  	    end
+  	    log e.message
+  	    @pbars[:preview].value = 100
+  	    return
       end
       
-			failed = false
-			#@pages[:preview].enabled = false
-			@pbars[:preview].value = 0
-			begin
-	      @preview_stats = Pandemonium.instance.organizer.simulate(library, temp)
-			rescue InvalidPath => e
-				log "organizer called with an invalid library path: #{@library.path}, aborting simulation"
-				failed = true
-			rescue InvalidArgument => e
-				log "this should not be happening; invalid library sent to organizer #{@library}"
-				failed = true
-			rescue Exception => e
-				log "some error occured while simulating: #{e.message}"
-				failed = true
-			end
-			@pages[:preview].enabled = true
-      
-			#return Dir.pwd if failed
-      return if failed
-      
-      fsm = Qt::FileSystemModel.new
-      fsm.readOnly = true
-      fsm.resolveSymlinks = false
-      #fsm.rootPath = @library.path
-      fsm.rootPath = temp
-      @tree.model = fsm
-      @tree.rootIndex = fsm.index(temp)
+
+      @fsm.rootPath = temp
+      @tree.model = @fsm
+      @tree.rootIndex = @fsm.index(temp)
       @tree.header.hideSection(1)
       @tree.header.hideSection(2)
       @tree.header.hideSection(3)

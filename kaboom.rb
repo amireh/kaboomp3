@@ -1,20 +1,23 @@
 #!/usr/bin/ruby
 
 ENV['APP_ROOT'] ||= File.expand_path(File.dirname(__FILE__))
-$LOAD_PATH << File.join(ENV['APP_ROOT'], 'app') << File.join(ENV['APP_ROOT'], 'lib')
+$LOAD_PATH << File.join(ENV['APP_ROOT'], 'lib')
+$LOAD_PATH << File.join(ENV['APP_ROOT'], 'app')  
+$LOAD_PATH << File.join(ENV['APP_ROOT'], 'app', 'controllers')
+$LOAD_PATH << File.join(ENV['APP_ROOT'], 'app', 'models')
 
 require 'rubygems'
 require 'fileutils'
 require 'active_record'
 require 'qt4'
 require 'qtuitools'
-require 'utility'
+require 'kaboom_utility'
 require 'kaboom_exceptions'
 require 'organizer'
-require File.join("controllers", "controller")
+require "controller"
 
 module Pixy
-  class Pandemonium
+  class KaBoom
     include Pixy::Utility
 
     @@_instance = nil
@@ -24,7 +27,7 @@ module Pixy
     public
     
     def self.instance
-      @@_instance = Pixy::Pandemonium.new if @@_instance.nil?
+      @@_instance = Pixy::KaBoom.new if @@_instance.nil?
     
       @@_instance
     end
@@ -34,7 +37,7 @@ module Pixy
         @ui[:window].show
         @ui[:controllers][:intro].attach
       rescue Exception => e
-        log("#{e.class}: #{e.message}")
+        log "#{e.class}: #{e.message}"
         exit
       end
       
@@ -58,7 +61,7 @@ module Pixy
           :library => nil
         },
         :resources => {
-          :buttons => "buttons.rcc"
+          :master => "resources.rcc"
         }
       }
       
@@ -73,7 +76,7 @@ module Pixy
       
       # load resources
       @ui[:resources].each_pair { |key, path| 
-        log "loading resource #{path}"; 
+        log "loading resource key: #{key} from file: #{path}"; 
         Qt::Resource.registerResource(File.join(ENV['APP_ROOT'], "resources", path)) 
       }
       
@@ -82,18 +85,14 @@ module Pixy
       
       # load models
       log "mounting models"
-      require File.join(path_to("models"), 'model')
-      Dir.new(path_to("models")).entries.each do |file|
-        require File.join(path_to("models"), file.gsub('.rb', '')) if ruby_script?(file)
-      end
+      Dir["#{File.join(path_to('controllers'), '*.rb')}"].each { |file| require file.gsub('.rb', '') }
 
       # create our controllers
       log "loading controllers"
-      Dir.new(path_to("controllers")).entries.each do |file|
-        require File.join(path_to("controllers"), file.gsub('.rb', '')) if ruby_script?(file) 
-      end
+      Dir["#{File.join(path_to('controllers'), '*.rb')}"].each { |file| require file.gsub('.rb', '') }
 
       # load our main window
+      # note: load_view() is a helper found in Pixy::Utility
       @ui[:window] = load_view(File.join(path_to("views"), "main_window.ui"), nil, @ui[:loader])
       
       @ui[:views] = {
@@ -116,7 +115,7 @@ module Pixy
       setup
     end
     
-  end # class Pandemonium
+  end # class KaBoom
 end # module Pixy
 
-Pixy::Pandemonium.instance.run!
+Pixy::KaBoom.instance.run!

@@ -24,7 +24,7 @@
 
 require 'rubygems'
 require 'id3lib'
-require 'utility'
+require 'kaboom_utility'
 require 'kaboom_exceptions'
 
 module Pixy
@@ -123,7 +123,7 @@ module Pixy
     end
 
     def update_progress
-      Pixy::Pandemonium.instance.ui[:controllers][:libraries].update_progress(@stepper, @step)
+      Pixy::KaBoom.instance.ui[:controllers][:libraries].update_progress(@stepper, @step)
     end
     
     def showing_progress?

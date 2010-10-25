@@ -47,7 +47,6 @@ module Pixy
             :labels => Qt::SizePolicy.new(Qt::SizePolicy::Preferred, Qt::SizePolicy::Maximum),
             :buttons => Qt::SizePolicy.new(Qt::SizePolicy::Fixed, Qt::SizePolicy::Fixed)
           }
-          
         }
       }
       
@@ -64,10 +63,8 @@ module Pixy
       
       @policies[:size][:grid].each_pair { |k, policy| policy.setHorizontalStretch(0); policy.setVerticalStretch(0) }
       
-      
       @grid.layout.addWidget(@labels[:no_libraries])
-      
-      
+
       #@pages.each_pair { |key, page| page.hide }
     end
 
@@ -79,10 +76,7 @@ module Pixy
         @labels[:no_libraries].show
       else
         switch_to(@pages[:list])
-        update
-        
-        #list_libraries
-        
+        update   
       end
     end
    
@@ -236,13 +230,13 @@ module Pixy
         "color: #ffffff;\n" \
         "font-weight: bold;\n" \
         "font-size: 14px;\n" \
-        "	border-image: url(:/library_buttons/images/buttons/library/Black2.png);\n" \
+        "	border-image: url(:/library/images/buttons/library/Black.png);\n" \
         "}\n" \
         "QPushButton:hover {\n" \
-        " border-image: url(:/library_buttons/images/buttons/library/Silver2.png);\n" \
+        " border-image: url(:/library/images/buttons/library/Silver.png);\n" \
         "}\n" \
         "QPushButton:pressed {\n" \
-        " border-image: url(:/library_buttons/images/buttons/library/Red.png);\n" \
+        " border-image: url(:/library/images/buttons/library/Red.png);\n" \
         "}"
   
       button.text = ""
