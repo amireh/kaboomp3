@@ -88,7 +88,8 @@ module Pixy
         @title.strip.gsub(/\.'"()/, '').gsub('_', ' ')
 
         @title = "#{@artist} - #{@title}" unless @artist == @@defaults[:artist]
-  
+
+        @genre.capitalize!
         @title.split.each { |word| word.capitalize! }.join(" ")
         @album.split.each { |word| word.capitalize! }.join(" ")
         @artist.split.each { |word| word.capitalize! }.join(" ")
