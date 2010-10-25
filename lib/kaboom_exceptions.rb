@@ -5,6 +5,7 @@ module Pixy
   class InvalidView < Exception; end
   class InvalidFile < Exception; end
 	class InvalidPath < Exception; end
+	class InvalidLibrary < Exception; end
 	
 	class PreviewFailed < RuntimeError
 	  attr_accessor :repairable

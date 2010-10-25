@@ -151,8 +151,8 @@ module Pixy
     # navigate library and clean up the tracks
     def process_library(library, dest_dir)
       
-      raise InvalidArguments if library.nil?
-			raise InvalidPath if !File.exists?(library.path)
+      raise InvalidLibrary if library.nil?
+			raise InvalidPath if library.path.nil? or File.zero?(library.path)
       
       log "Organizer called for some blowing up action, about to start traversing directories in:"
       log "Library: #{library.title} @ #{library.path}"

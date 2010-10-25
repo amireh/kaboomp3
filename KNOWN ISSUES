@@ -5,3 +5,4 @@
 * OS X: Organizer crashes alot with no conceivable cause:
   # (update) : the issue lies in corrupt mp3 files when opened by ID3Lib::Tag
 * (fixed) deleting a library when there's none else causes a crash when switching back to intro screen
+* MessageBox dialogues are confined to a small area

@@ -125,15 +125,14 @@ module Pixy
       @dialogs[:preview_failed].icon = Qt::MessageBox::Critical
       @dialogs[:preview_failed].addButton(Qt::MessageBox::Ok)
       @dialogs[:preview_failed].defaultButton = @dialogs[:preview_failed].buttons.first
-      
+            
       @dialogs[:retry_preview].text = "Sorry! Preview failed."
-      @dialogs[:retry_preview].informativeText = "" \
-      "Please make sure you have write privileges to " \
-      "the directory in which kaBoom resides, and try again. "
+
       @dialogs[:retry_preview].windowTitle = "Preview Failed"
       @dialogs[:retry_preview].icon = Qt::MessageBox::Warning
       @dialogs[:retry_preview].addButton(Qt::MessageBox::Ok)
       @dialogs[:retry_preview].defaultButton = @dialogs[:preview_failed].buttons.first
+
       
       @tree = @pages[:preview].findChild(Qt::TreeView, "treeView")
       
@@ -336,6 +335,9 @@ module Pixy
         FileUtils.mkdir_p(temp)
       
         if !File.exists?(temp) || !File.writable?(temp)
+          @dialogs[:retry_preview].informativeText = "" \
+          "Please make sure you that have write privileges to " \
+          "the directory in which kaBoom resides, and try again. "          
           raise PreviewFailed.new(true), "destination does not exist or is not writable!"
         end
       
@@ -344,20 +346,21 @@ module Pixy
   			
   			begin
   	      @preview_stats = KaBoom.instance.organizer.simulate(library, temp)
-  			rescue InvalidPath
-  			rescue InvalidArgument
-  			rescue Exception => e
-  				raise PreviewFailed(false), "some error occured while simulating: #{e.message}"
+  			rescue InvalidPath => e
+          @dialogs[:retry_preview].informativeText = "" \
+          "Please make sure you have chosen a valid library path " \
+          "to organize, and try again."
+  				raise PreviewFailed.new(true), "library path possibly nil? #{e.message}"
   			end
   			
   	  rescue PreviewFailed => e
-  	    if e.repairable
-  	      @dialogs[:retry_preview].show
-        else
-  		    @dialogs[:preview_failed].show
-  	    end
+	      @dialogs[:retry_preview].show
+  	    @pbars[:preview].value = 100	      
+	      return
+      rescue Exception => e
+  		  @dialogs[:preview_failed].show
+  	    @pbars[:preview].value = 100  		  
   	    log e.message
-  	    @pbars[:preview].value = 100
   	    return
       end
       

@@ -1,7 +1,7 @@
 require 'rubygems'
 require 'Qt4'
 require 'qtuitools'
-require '../lib/utility'
+require '../lib/kaboom_utility'
 
 ENV['APP_ROOT'] ||= File.expand_path("..")
 
