@@ -24,5 +24,83 @@ module Pixy
     property :created_at, DateTime
     property :created_on, Date
 =end
+
+    attr_reader :title, :album, :artist, :genre, :filepath
+    
+    @@defaults = { 
+      :title => "Untitled Track",
+      :artist => "Unknown Artist",
+      :album => "Untitled Album",
+      :genre => "Uncategorized"
+    }
+    
+    def initialize(file_path)
+      @filepath = file_path
+  
+      prepare
+    end
+
+    def possibly_sane?
+      File.ftype(@filepath) == "file" && !File.zero?(@filepath) && File.readable?(@filepath)
+    end
+    
+    def sane?
+      true unless @title.nil? or @artist.nil? or @album.nil? or @genre.nil?
+    end
+
+    def inspect
+      return "Track: #{@title}, by #{@artist}, from the album #{@album} (#{@genre})"
+    end
+    
+    protected
+    
+    # parses ID3 tags
+    def prepare
+      
+      raise InvalidFile if !possibly_sane?
+      
+      begin
+        # Load a tag from a file
+        tag = ID3Lib::Tag.new(@filepath)
+        
+        log "tag created"
+
+        @title = tag.title
+        @title = File::basename(@filepath, "mp3") if @title.nil? or @title.strip.nil? or @title.is_binary_data?
+  
+        @album = tag.album
+        @album = @@defaults[:album] if @album.nil? or @album.strip.nil? or @album.empty? or @album.is_binary_data?
+  
+        @artist = tag.artist
+        @artist = @@defaults[:artist] if @artist.nil? or @artist.strip.nil? or @artist.is_binary_data?
+  
+        # parse the genre
+        # convert from id3 genre code to its string equivalent
+        if tag.genre && (tag.genre =~ /\d/) != nil
+          @genre = ID3Lib::Info::Genres[tag.genre.gsub(/[\(\)]/, '')]
+        end
+        
+        # if we have a string genre, assign it, otherwise, force default
+        @genre ||= tag.genre
+        @genre = @@defaults[:genre] if @genre.nil? or @genre.is_binary_data?
+  
+        # clean up title field: remove trailing and leading whitespace, 
+        # quotes, and brackets, and convert underscores into hyphens
+        @title.strip.gsub(/\.'"()/, '').gsub('_', ' ')
+  
+        @title = "#{@artist} - #{@title}" unless @artist == @@defaults[:artist]
+  
+        @title.capitalize!
+        @album.capitalize!
+        @artist.capitalize!
+    
+      rescue Exception => e
+        @title, @artist, @album, @genre = nil
+      end
+
+    end
+
+
+    
   end
 end

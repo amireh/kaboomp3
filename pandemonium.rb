@@ -9,13 +9,39 @@ require 'active_record'
 require 'qt4'
 require 'qtuitools'
 require 'utility'
+require 'kaboom_exceptions'
+require 'organizer'
 
 module Pixy
   class Pandemonium
     include Pixy::Utility
 
-    attr_reader :ui
-  
+    @@_instance = nil
+    
+    attr_reader :ui, :organizer
+
+    public
+    
+    def self.instance
+      @@_instance = Pixy::Pandemonium.new if @@_instance.nil?
+    
+      @@_instance
+    end
+    
+    def run!
+      begin
+        @ui[:window].show
+        @ui[:controllers][:intro].attach
+      rescue Exception => e
+        log("#{e.class}: #{e.message}")
+        exit
+      end
+      
+      @ui[:qt].exec
+    end
+    
+    protected
+    
     def setup
 
       @ui = { 
@@ -34,6 +60,9 @@ module Pixy
           :buttons => "buttons.rcc"
         }
       }
+      
+      log "initializing Organizer"
+      @organizer = Organizer.new()
       
       # initialize Qt & the UI loader
       log "initializing Qt"
@@ -78,20 +107,15 @@ module Pixy
       
       log "set up!"
     end
-
-    def run!
-      begin
-        setup
-        @ui[:window].show
-        @ui[:controllers][:intro].attach
-      rescue Exception => e
-        log("#{e.class}: #{e.message}")
-        exit
-      end
-      
-      @ui[:qt].exec
+    
+    private
+    
+    def initialize()
+      super()
+      setup
     end
+    
   end # class Pandemonium
 end # module Pixy
 
-Pixy::Pandemonium.new.run!
+Pixy::Pandemonium.instance.run!

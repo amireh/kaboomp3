@@ -3,3 +3,4 @@
 * the actual organizing
 * interactive buttons should have their focus policies set to NONE
 * clean out resources
+* "choose library path" should default to existing library path otherwise current directory

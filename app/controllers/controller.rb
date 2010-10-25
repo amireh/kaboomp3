@@ -1,9 +1,5 @@
 module Pixy
-  
-  class InvalidState < Exception; end
-  class InvalidTransition < Exception; end
-  class InvalidView < Exception; end
-  
+    
   #################################################################################
   # Controllers have a set of views, controlled by a master view.
   # Views can have pages as children elements, which in turn can contain

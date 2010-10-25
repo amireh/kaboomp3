@@ -1,6 +1,4 @@
 module Pixy
-  class InvalidArgument < Exception; end
-  
   class LibraryController < Controller
 
     attr_accessor :library
@@ -11,7 +9,8 @@ module Pixy
           'save_preferences()',
           'back_to_libraries()',
           'switch_page(int)',
-          'user_agreement()'
+          'user_agreement()',
+          'do_organize()'
 
     public
     
@@ -139,6 +138,7 @@ module Pixy
       
       connect(@buttons[:choosePath], SIGNAL('clicked()'), self, SLOT('choose_library_path()'))
       connect(@buttons[:update], SIGNAL('clicked()'), self, SLOT('save_preferences()'))
+      connect(@buttons[:organize], SIGNAL('clicked()'), self, SLOT('do_organize()'))
       connect(@buttons[:back_to_libraries], SIGNAL('clicked()'), self, SLOT('back_to_libraries()'))
       
       connect(@canvas, SIGNAL('currentChanged(int)'), self, SLOT('switch_page(int)'))
@@ -154,12 +154,14 @@ module Pixy
       end
       
       if @state == "previewing"
+        simulated_library = simulate()
+        
         fsm = Qt::FileSystemModel.new
         fsm.readOnly = true
         fsm.resolveSymlinks = false
         fsm.rootPath = @library.path
         @tree.model = fsm
-        @tree.rootIndex = fsm.index(@library.path)
+        @tree.rootIndex = fsm.index(simulated_library)
         @tree.header.hideSection(1)
         @tree.header.hideSection(2)
         @tree.header.hideSection(3)
@@ -261,6 +263,20 @@ module Pixy
       else
         @buttons[:organize].enabled = false
       end
+    end
+    
+    def simulate
+      temp = File.join(ENV['APP_ROOT'], "tmp", "snapshot_#{Time.now.to_i}")
+      FileUtils.mkdir_p(temp)
+      
+      if !File.exists?(temp)
+        log "Could not create temp library!"
+        return
+      end
+      
+      Pandemonium.instance.organizer.simulate(library, temp)
+      
+      return temp
     end
     
   end # class LibraryController
