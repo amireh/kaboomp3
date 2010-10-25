@@ -6,3 +6,4 @@
 * (DONE) "choose library path" should default to existing library path otherwise current directory
 * implement varying sorting techniques: light, normal, aggressive
 * Organizer should obey library sorting preferences
+* add SuperGenres
