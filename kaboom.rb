@@ -27,7 +27,7 @@ module Pixy
     public
     
     def self.instance
-      @@_instance = Pixy::KaBoom.new if @@_instance.nil?
+      @@_instance = KaBoom.new if @@_instance.nil?
     
       @@_instance
     end
@@ -85,7 +85,7 @@ module Pixy
       
       # load models
       log "mounting models"
-      Dir["#{File.join(path_to('controllers'), '*.rb')}"].each { |file| require file.gsub('.rb', '') }
+      Dir["#{File.join(path_to('models'), '*.rb')}"].each { |file| require file.gsub('.rb', '') }
 
       # create our controllers
       log "loading controllers"

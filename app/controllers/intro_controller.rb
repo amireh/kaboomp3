@@ -146,7 +146,6 @@ module Pixy
     
     def clear_view
       @grid.children.each do |element|
-        puts element.inspect
         unless element.class == Qt::GridLayout or element.objectName == "noLibrariesLabel"
           @grid.layout.removeWidget(element)
           element.dispose

@@ -4,8 +4,6 @@
 # their manipulation history; say when a track is "organized", its earlier state
 # is kept track of here for later rollbacks if needed
 
-require File.join("app", "models", "library")
-
 module Pixy
   class Track < ActiveRecord::Base
 		include Pixy::Utility
