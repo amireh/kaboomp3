@@ -2,9 +2,9 @@ module Pixy
   class IntroController < Controller
     
     slots :quit, 
-      :show_library_form, 
-      :hide_library_form, 
-      :create_library, 
+      'show_library_form()',
+      'hide_library_form()',
+      'create_library()',
       'show_library(QString)'
 
 
@@ -23,7 +23,6 @@ module Pixy
       })
       
       @buttons = { 
-        :create_library => @canvas.findChild(Qt::PushButton, "createNewLibraryButton"),
         :add_library => @canvas.findChild(Qt::PushButton, "addLibraryButton")
       }
       
@@ -89,6 +88,8 @@ module Pixy
       connect(@buttons[:add_library], SIGNAL('clicked()'), self, SLOT('show_library_form()'))
       connect(@dialog_buttons[:form], SIGNAL('accepted()'), self, SLOT('create_library()'))
       connect(@dialog_buttons[:form], SIGNAL('rejected()'), self, SLOT('hide_library_form()'))
+      
+      @bound = true
     end
       
     private
@@ -103,12 +104,10 @@ module Pixy
       end
       
       @pages[:form].show
-      #switch_to(@pages[:form])
     end
     
     def hide_library_form
       @pages[:form].hide
-      #switch_to(@pages[:list])
     end
     
     def create_library
@@ -120,8 +119,10 @@ module Pixy
         return
       end
       
-      library = Library.new(form)
-      if library.save! then
+			log "creating library #{form[:title]}"
+
+      library = Library.create(form)
+      if library.nil? then
         log "Library #{library.title} created"
       else
         log "There was a problem creating library with input: #{form.inspect}"
