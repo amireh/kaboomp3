@@ -112,7 +112,6 @@ module Pixy
       populate
       
       update
-        
     end
     
     def update_progress(stepper, step)
@@ -131,9 +130,6 @@ module Pixy
       @views[:actions].setCurrentWidget(@pages[:actions][:preferences])
     end
     
-    def bind
-      
-    end
     
     def bind_deferred
 
@@ -154,6 +150,8 @@ module Pixy
       connect(@buttons[:back_to_libraries], SIGNAL('clicked()'), self, SLOT('back_to_libraries()'))
       
       connect(@canvas, SIGNAL('currentChanged(int)'), self, SLOT('switch_page(int)'))
+      
+      @bound = true
     end
     
     
@@ -167,7 +165,6 @@ module Pixy
       
       if @state == "previewing"
         #simulated_library = simulate()
-        
       end
       
     end

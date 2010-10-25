@@ -24,7 +24,7 @@ module Pixy
   class Controller < Qt::Object
     include Pixy::Utility
     
-    attr_reader :ui, :canvas, :pages, :views
+    attr_reader :ui, :canvas, :pages, :views, :bound
     
     #################################################################################
     # loads the controller
@@ -60,6 +60,7 @@ module Pixy
       @ui[:window].findChild(Qt::StackedWidget, "viewContent").addWidget(@views[:master])
       
       # finally, bind our event handlers
+      @bound = false
       bind
     end
 
@@ -88,7 +89,7 @@ module Pixy
       #end
 
       # subviews elements may be bound here
-      bind_deferred
+      bind_deferred unless bound?
     end
 
     # switches from current view to the destination controller's
@@ -114,6 +115,10 @@ module Pixy
     
     # will be called on view attachment; ie after subviews are loaded
     def bind_deferred
+    end
+    
+    def bound?
+      return @bound
     end
     
   end

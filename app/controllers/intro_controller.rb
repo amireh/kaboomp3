@@ -96,7 +96,6 @@ module Pixy
       connect(@buttons[:add_library], SIGNAL('clicked()'), self, SLOT('show_library_form()'))
       connect(@dialog_buttons[:form], SIGNAL('accepted()'), self, SLOT('create_library()'))
       connect(@dialog_buttons[:form], SIGNAL('rejected()'), self, SLOT('hide_library_form()'))
-      
     end
       
     private
