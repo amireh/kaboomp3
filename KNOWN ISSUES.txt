@@ -1,2 +1,4 @@
-* adding a library might result in adding more than 1
-* library population is erratic / not working properly (fixed)
+* (fixed) adding a library might result in adding more than 1
+* (fixed) library population is erratic / not working properly
+* (fixed) slots are being called an increasing number of times per signal
+* OS X: progress bar not being updated by steps 

@@ -12,7 +12,9 @@ module Pixy
           'switch_page(int)',
           'user_agreement()',
           'do_organize()',
-          'do_preview()'
+          'do_preview()',
+          'remove_library()',
+          'do_remove_library()'
 
     public
     
@@ -60,6 +62,7 @@ module Pixy
         :preview => @canvas.findChild(Qt::Widget, "tabPreview"),
         :preferences => @canvas.findChild(Qt::Widget, "tabPreferences")
       }
+      
       @radio_buttons = {
         :naming => {
           :by_title   => @pages[:preferences].findChild(Qt::RadioButton, "nameByTitle"),
@@ -89,6 +92,7 @@ module Pixy
       @buttons = {
         :choosePath => @pages[:preferences].findChild(Qt::ToolButton, "chooseLibraryPath"),
         :update => @pages[:actions][:preferences].findChild(Qt::PushButton, "updatePreferences"),
+        :remove => @pages[:actions][:preferences].findChild(Qt::PushButton, "removeLibrary"),
         :preview => @pages[:actions][:preview].findChild(Qt::PushButton, "preview"),
         :organize => @pages[:actions][:preview].findChild(Qt::PushButton, "organize"),
         :back_to_libraries => @views[:master].findChild(Qt::PushButton, "backToLibraries")
@@ -97,6 +101,18 @@ module Pixy
       @pbars = {
         :preview => @pages[:preview].findChild(Qt::ProgressBar, "progressBar")
       }
+      
+      @dialogs = {
+        :remove_library => Qt::MessageBox.new
+      }
+      
+      @dialogs[:remove_library].text = "Are you sure you want to remove this library?"
+      @dialogs[:remove_library].informativeText = "This action is not reversible."
+      @dialogs[:remove_library].windowTitle = "Removing library"
+      @dialogs[:remove_library].icon = Qt::MessageBox::Warning
+      @dialogs[:remove_library].addButton(Qt::MessageBox::Yes)
+      @dialogs[:remove_library].addButton(Qt::MessageBox::No)
+      @dialogs[:remove_library].defaultButton = @dialogs[:remove_library].buttons.last
       
       @tree = @pages[:preview].findChild(Qt::TreeView, "treeView")
       
@@ -145,10 +161,11 @@ module Pixy
       
       connect(@buttons[:choosePath], SIGNAL('clicked()'), self, SLOT('choose_library_path()'))
       connect(@buttons[:update], SIGNAL('clicked()'), self, SLOT('save_preferences()'))
+      connect(@buttons[:remove], SIGNAL('clicked()'), self, SLOT('remove_library()'))
       connect(@buttons[:organize], SIGNAL('clicked()'), self, SLOT('do_organize()'))
       connect(@buttons[:preview], SIGNAL('clicked()'), self, SLOT('do_preview()'))
       connect(@buttons[:back_to_libraries], SIGNAL('clicked()'), self, SLOT('back_to_libraries()'))
-      
+      connect(@dialogs[:remove_library].buttons.first, SIGNAL('clicked()'), self, SLOT('do_remove_library()'))
       connect(@canvas, SIGNAL('currentChanged(int)'), self, SLOT('switch_page(int)'))
       
       @bound = true
@@ -234,6 +251,15 @@ module Pixy
         :naming => naming,
         :hard_copy => @radio_buttons[:storage][:hard_copy].checked?
       )
+    end
+    
+    def remove_library()
+      @dialogs[:remove_library].show
+    end
+    
+    def do_remove_library()
+      @library.destroy
+      back_to_libraries
     end
     
     def back_to_libraries()

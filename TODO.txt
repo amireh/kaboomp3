@@ -1,7 +1,7 @@
-* ability to delete a library
+* (DONE) ability to delete a library
 * (DONE) preview simulation
 * the actual organizing
 * (DONE) interactive buttons should have their focus policies set to NONE
 * clean out resources
-* "choose library path" should default to existing library path otherwise current directory
+* (DONE) "choose library path" should default to existing library path otherwise current directory
 * implement varying sorting techniques: light, normal, aggressive
