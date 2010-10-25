@@ -31,13 +31,10 @@ module Pixy
         :form => @pages[:form].findChild(Qt::DialogButtonBox, "libraryFormButtonBox")
       }
         
-      @frames = {
-        :no_libraries => @canvas.findChild(Qt::Frame, "libraryNew"),
-        :grid => @canvas.findChild(Qt::GroupBox, "libraryGrid")
-      }
-      
+      @grid = @canvas.findChild(Qt::GroupBox, "libraryGrid")
+
       @labels = {
-        :no_libraries => Qt::Label.new("Text", @frames[:grid])
+        :no_libraries => Qt::Label.new("Text", @grid)
       }
       
       @dialogs = {
@@ -59,6 +56,7 @@ module Pixy
       @dialogs[:too_many_libraries].windowTitle = "Notice"
       @dialogs[:too_many_libraries].icon = Qt::MessageBox.Information
       
+      @labels[:no_libraries].objectName = "noLibrariesLabel"
       @labels[:no_libraries].sizePolicy = @policies[:size][:grid][:labels]
       @labels[:no_libraries].alignment = Qt::AlignCenter
       @labels[:no_libraries].text = "You have no libraries defined yet! Click the button below to add one."
@@ -67,7 +65,7 @@ module Pixy
       @policies[:size][:grid].each_pair { |k, policy| policy.setHorizontalStretch(0); policy.setVerticalStretch(0) }
       
       
-      @frames[:grid].layout.addWidget(@labels[:no_libraries])
+      @grid.layout.addWidget(@labels[:no_libraries])
       
       
       #@pages.each_pair { |key, page| page.hide }
@@ -77,6 +75,7 @@ module Pixy
       super()
       
       if Library.count == 0 then
+        clear_view
         @labels[:no_libraries].show
       else
         switch_to(@pages[:list])
@@ -152,12 +151,15 @@ module Pixy
     end
     
     def clear_view
-      @frames[:grid].children.each do |element|
-        unless element.class == Qt::GridLayout
-          @frames[:grid].layout.removeWidget(element)
+      @grid.children.each do |element|
+        puts element.inspect
+        unless element.class == Qt::GridLayout or element.objectName == "noLibrariesLabel"
+          @grid.layout.removeWidget(element)
           element.dispose
         end
-      end      
+      end
+      
+      @labels[:no_libraries].hide
     end
     
     def update
@@ -200,7 +202,7 @@ module Pixy
       entry[:layout].addWidget(entry[:label])
       entry[:layout].addWidget(entry[:button])
       # add the vertical layout to the grid (grid contains 3 items in each row)
-      @frames[:grid].layout.addLayout(
+      @grid.layout.addLayout(
         entry[:layout], 
         ((index-1)/3).to_i, # row
         index % 3, # column
@@ -214,7 +216,7 @@ module Pixy
     
     # helpers
     def create_grid_label(text, id)
-      label = Qt::Label.new("#{text}", @frames[:grid])
+      label = Qt::Label.new("#{text}", @grid)
       label.objectName = "libraryTitle#{id}"
       label.sizePolicy = @policies[:size][:grid][:labels]
       label.alignment = Qt::AlignCenter
@@ -225,7 +227,7 @@ module Pixy
     end
     
     def create_grid_button(id)
-      button = Qt::PushButton.new(@frames[:grid])
+      button = Qt::PushButton.new(@grid)
       button.objectName = "libraryButton#{id}"
       button.sizePolicy = @policies[:size][:grid][:buttons]
       button.minimumSize = Qt::Size.new(120, 120)
