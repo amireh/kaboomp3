@@ -118,7 +118,7 @@ module Pixy
       @buttons[:organize].enabled = false
       
       @canvas.setCurrentWidget(@tabs[:preferences])
-      
+      @views[:actions].setCurrentWidget(@pages[:actions][:preferences])
     end
     
     def bind

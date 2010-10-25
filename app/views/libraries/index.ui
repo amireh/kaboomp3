@@ -152,6 +152,9 @@ p, li { white-space: pre-wrap; }
                   <height>80</height>
                  </size>
                 </property>
+                <property name="focusPolicy">
+                 <enum>Qt::NoFocus</enum>
+                </property>
                 <property name="styleSheet">
                  <string notr="true">QPushButton {
 color: #ffffff;
@@ -168,6 +171,9 @@ border-image: url(:/80x80/images/buttons/round/80x80/Green.png);
                 </property>
                 <property name="text">
                  <string>Add</string>
+                </property>
+                <property name="flat">
+                 <bool>true</bool>
                 </property>
                </widget>
               </item>
