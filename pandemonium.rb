@@ -6,11 +6,12 @@ $LOAD_PATH << File.join(ENV['APP_ROOT'], 'app') << File.join(ENV['APP_ROOT'], 'l
 require 'rubygems'
 require 'fileutils'
 require 'active_record'
-require 'qt4'
+require 'Qt4'#'qt4'
 require 'qtuitools'
 require 'utility'
 require 'kaboom_exceptions'
 require 'organizer'
+require File.join("controllers", "controller")
 
 module Pixy
   class Pandemonium

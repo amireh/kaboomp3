@@ -30,29 +30,58 @@ require 'kaboom_exceptions'
 module Pixy
   class Organizer
     include Pixy::Utility
-    include Pixy::ID3
 
-    attr_reader :errors, :successes, :simulating
+    attr_reader :stats, :errors, :simulating
+    attr_accessor :tracking_errors, :tracking_stats
     
     public
     
     def initialize()
       super()
       
-      map_genres
+      @tracking_stats = true
+      @tracking_errors = true
+      
       @simulating = false
+      @errors = { :dest_exists => 0 }
+			@stats = { 
+			  :failures => 0,
+			  :nr_tracks => 0,
+			  :timer => { 
+			    :begin => nil, 
+			    :end => nil, 
+			    :elapsed => nil
+			  },
+			  :progress => 0
+			}
       
       log "Organizer: ready to blow up!"
     end
     
     def simulate(library, dest)
+      @stats[:timer][:begin] = Time.now
+      
       @simulating = true
       process_library(library, dest)
+
+      @stats[:timer][:end] = Time.now
+      
+      @stats[:timer][:elapsed] = @stats[:timer][:end] - @stats[:timer][:begin]
+      
+			@stats
     end
     
     def organize(library)
     end
     
+    def tracking_errors?
+      return @tracking_errors
+    end
+    
+    def tracking_stats?
+      return @tracking_stats
+    end
+      
     private
     
     # trims filename, replaces '_' with ' ', and Capitalizes Every Word
@@ -60,37 +89,83 @@ module Pixy
       
     end
     
+		def track_error(e)
+			@errors[e.class.to_s.to_sym] ||= 0
+			@errors[e.class.to_s.to_sym] += 1
+		end
+		
     # returns a list of all the MP3 files in the given directory as Track objects
     def tracks_in_folder(dir)
       tracks = []
-      Dir.new(dir).entries.each do |file|
+      Dir["#{dir}/*.mp3"].each do |file|
 
-        
-        unless (file =~ /\A[^\.].(.)*.(\.mp3|\.MP3)\z/) == nil
-          log "adding track @#{file}"
-          track = Track.new(file)
+        #log "processing #{file}" 
+        #unless (file =~ /\A[^\.].(.)*.(\.mp3|\.MP3)\z/) == nil
+
+          #@stats[:nr_tracks] += 1 if tracking_stats?
           
-          if track.sane?
-            # add the track to the processing queue
-            tracks.push(track)
-          else
-            @errors += 1
+					begin
+	          track = Track.new(file)
+	          tracks.push(track) if track.sane?
+					rescue Exception => e
+						track_error(e) if tracking_errors?
+						@stats[:failures] += 1 if tracking_stats?
           end
+
           
         end
 
-      end
+      #end
 
       tracks
     end
+
+    def update_progress
+      Pixy::Pandemonium.instance.ui[:controllers][:libraries].update_progress(@stepper, @step)
+    end
     
+    def showing_progress?
+      false
+    end
+    
+    def find_nr_tracks(library)
+      count = 0
+      
+      dirs = []
+      dirs.push library.path
+      
+      while !dirs.empty? do
+        dir = dirs.pop # get the last directory we came across
+        
+        Dir.chdir(dir)
+        count += Dir["*.mp3"].count
+        
+        Dir["*/"].each { |entry| dirs.push(File.join(Dir.pwd, entry)) }
+      end
+      
+      count
+    end
+        
     # navigate library and clean up the tracks
     def process_library(library, dest_dir)
-      @errors, @successes = 0, 0
       
       raise InvalidArguments if library.nil?
+			raise InvalidPath if !File.exists?(library.path)
       
-      log "- Housekeeper called for some cleaning, about to start traversing directories in: \n+ Library: #{library.title} @ #{library.path}\n+"
+      log "Organizer called for some blowing up action, about to start traversing directories in:"
+      log "Library: #{library.title} @ #{library.path}"
+      if showing_progress?
+        log "determining number of tracks in library..."
+        @stats[:nr_tracks] = find_nr_tracks(library)
+        log "#{@stats[:nr_tracks]} tracks found"
+        if @stats[:nr_tracks] < 100
+          @step = (100 / @stats[:nr_tracks]).floor
+        else
+          @step = (@stats[:nr_tracks] / 100).ceil
+        end
+      end
+      
+      @stepper = 0
       
       dirs = []
       dirs.push library.path
@@ -100,14 +175,15 @@ module Pixy
         
         Dir.chdir(dir)
         
-        log "Browsing #{Dir.pwd}:"
+        #log "Browsing #{Dir.pwd}:"
         
         # process current directory's tracks
         tracks = tracks_in_folder(dir)
         
-        log "#{tracks.count} tracks found"
-        i = 1
+        #log "#{tracks.count} tracks found"
+        #i = 1
         tracks.each do |track|
+        
           begin
             dest = {
               :dir => File.join(dest_dir, track.genre, track.artist, track.album),
@@ -117,40 +193,45 @@ module Pixy
           
             # don't do anything if destination is occupied
             if File::exists?(dest[:path]) 
-              puts "\tTrack exists at #{dest[:path]}!"
+              log "\tTrack exists at #{dest[:path]}!"
+              @errors[:dest_exists] += 1
               next
             end
             
-            FileUtils.mkdir_p(dest[:dir])
+            FileUtils.mkdir_p(dest[:dir]) rescue nil # ignore if directory exists
             if @simulating
               FileUtils.touch(dest[:path])
             else
               #FileUtils.cp(track.filepath, dest[:path]) 
             end
             
-            log "\t#{i}. #{track.inspect}"
-            @successes += 1
-            i += 1
+            #log "\t#{i}. #{track.inspect}"
+            #@successes += 1
+            #i += 1
           rescue Exception => e
             log "faced an issue: #{e.message}"
-            @errors += 1
+            @stats[:failures] += 1 if tracking_stats?
+						track_error(e) if tracking_errors?
           end
-          
+          if showing_progress?
+            @stepper += 1
+            if @stepper % @step == 0 then update_progress end
+          end
         end
         
-        Dir.new(dir).entries.each do |entry|
+        #Dir.new(dir).entries.each do |entry|
+        Dir["*/"].each do |entry|
           # skip '.', '..' or any other file, we need directories
-          next unless File::directory?(entry) and (entry =~ /\A[\.]{1,2}\z/) == nil
+          #next unless File::directory?(entry) and (entry =~ /\A[\.]{1,2}\z/) == nil
                     
           dirs.push("#{Dir.pwd}/#{entry}")
-          
-          log "\t+ added directory to queue: #{dirs.last.gsub(library.path + "/", '')}"
+          #log "\t+ added directory to queue: #{dirs.last.gsub(library.path + "/", '')}"
           
         end
         
       end
       
-      log "- House cleaning is over: \nI was able to process #{@successes} mp3 files, and failed to process #{@errors} mp3 files.\nI hope you enjoy my services. Bye!"
+
     end
     
   end

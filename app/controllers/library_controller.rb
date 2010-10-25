@@ -2,7 +2,8 @@ module Pixy
   class LibraryController < Controller
 
     attr_accessor :library
-    attr_reader :state
+    attr_reader :state, :preview_stats
+    
     
     slots 'update_sample_path()',
           'choose_library_path()',
@@ -10,7 +11,8 @@ module Pixy
           'back_to_libraries()',
           'switch_page(int)',
           'user_agreement()',
-          'do_organize()'
+          'do_organize()',
+          'do_preview()'
 
     public
     
@@ -87,8 +89,13 @@ module Pixy
       @buttons = {
         :choosePath => @pages[:preferences].findChild(Qt::ToolButton, "chooseLibraryPath"),
         :update => @pages[:actions][:preferences].findChild(Qt::PushButton, "updatePreferences"),
+        :preview => @pages[:actions][:preview].findChild(Qt::PushButton, "preview"),
         :organize => @pages[:actions][:preview].findChild(Qt::PushButton, "organize"),
         :back_to_libraries => @views[:master].findChild(Qt::PushButton, "backToLibraries")
+      }
+      
+      @pbars = {
+        :preview => @pages[:preview].findChild(Qt::ProgressBar, "progressBar")
       }
       
       @tree = @pages[:preview].findChild(Qt::TreeView, "treeView")
@@ -106,6 +113,10 @@ module Pixy
       
       update
         
+    end
+    
+    def update_progress(stepper, step)
+      @pbars[:preview].value = (stepper / step)
     end
     
     protected
@@ -139,6 +150,7 @@ module Pixy
       connect(@buttons[:choosePath], SIGNAL('clicked()'), self, SLOT('choose_library_path()'))
       connect(@buttons[:update], SIGNAL('clicked()'), self, SLOT('save_preferences()'))
       connect(@buttons[:organize], SIGNAL('clicked()'), self, SLOT('do_organize()'))
+      connect(@buttons[:preview], SIGNAL('clicked()'), self, SLOT('do_preview()'))
       connect(@buttons[:back_to_libraries], SIGNAL('clicked()'), self, SLOT('back_to_libraries()'))
       
       connect(@canvas, SIGNAL('currentChanged(int)'), self, SLOT('switch_page(int)'))
@@ -154,17 +166,8 @@ module Pixy
       end
       
       if @state == "previewing"
-        simulated_library = simulate()
+        #simulated_library = simulate()
         
-        fsm = Qt::FileSystemModel.new
-        fsm.readOnly = true
-        fsm.resolveSymlinks = false
-        fsm.rootPath = @library.path
-        @tree.model = fsm
-        @tree.rootIndex = fsm.index(simulated_library)
-        @tree.header.hideSection(1)
-        @tree.header.hideSection(2)
-        @tree.header.hideSection(3)
       end
       
     end
@@ -265,7 +268,7 @@ module Pixy
       end
     end
     
-    def simulate
+    def do_preview
       temp = File.join(ENV['APP_ROOT'], "tmp", "snapshot_#{Time.now.to_i}")
       FileUtils.mkdir_p(temp)
       
@@ -274,9 +277,40 @@ module Pixy
         return
       end
       
-      Pandemonium.instance.organizer.simulate(library, temp)
+			failed = false
+			@pages[:preview].enabled = false
+			begin
+	      @preview_stats = Pandemonium.instance.organizer.simulate(library, temp)
+			rescue InvalidPath => e
+				log "organizer called with an invalid library path: #{@library.path}, aborting simulation"
+				failed = true
+			rescue InvalidArgument => e
+				log "this should not be happening; invalid library sent to organizer #{@library}"
+				failed = true
+			rescue Exception => e
+				log "some error occured while simulating: #{e.message}"
+				failed = true
+			end
+			@pages[:preview].enabled = true
       
-      return temp
+			#return Dir.pwd if failed
+      return if failed
+      
+      fsm = Qt::FileSystemModel.new
+      fsm.readOnly = true
+      fsm.resolveSymlinks = false
+      #fsm.rootPath = @library.path
+      fsm.rootPath = temp
+      @tree.model = fsm
+      @tree.rootIndex = fsm.index(temp)
+      @tree.header.hideSection(1)
+      @tree.header.hideSection(2)
+      @tree.header.hideSection(3)
+      @tree.expandAll
+      
+      @pbars[:preview].value = 100
+      puts @preview_stats.inspect
+      #return temp
     end
     
   end # class LibraryController

@@ -6,6 +6,7 @@
 
 module Pixy
   class Track < ActiveRecord::Base
+		include Pixy::Utility
     belongs_to :album
     belongs_to :library
 =begin
@@ -59,11 +60,9 @@ module Pixy
       
       raise InvalidFile if !possibly_sane?
       
-      begin
+      #begin
         # Load a tag from a file
         tag = ID3Lib::Tag.new(@filepath)
-        
-        log "tag created"
 
         @title = tag.title
         @title = File::basename(@filepath, "mp3") if @title.nil? or @title.strip.nil? or @title.is_binary_data?
@@ -77,7 +76,7 @@ module Pixy
         # parse the genre
         # convert from id3 genre code to its string equivalent
         if tag.genre && (tag.genre =~ /\d/) != nil
-          @genre = ID3Lib::Info::Genres[tag.genre.gsub(/[\(\)]/, '')]
+          @genre = ID3Lib::Info::Genres[tag.genre.gsub(/[\(\)]/, '').to_i]
         end
         
         # if we have a string genre, assign it, otherwise, force default
@@ -87,16 +86,16 @@ module Pixy
         # clean up title field: remove trailing and leading whitespace, 
         # quotes, and brackets, and convert underscores into hyphens
         @title.strip.gsub(/\.'"()/, '').gsub('_', ' ')
-  
+
         @title = "#{@artist} - #{@title}" unless @artist == @@defaults[:artist]
   
-        @title.capitalize!
-        @album.capitalize!
-        @artist.capitalize!
+        @title.split.each { |word| word.capitalize! }.join(" ")
+        @album.split.each { |word| word.capitalize! }.join(" ")
+        @artist.split.each { |word| word.capitalize! }.join(" ")
     
-      rescue Exception => e
-        @title, @artist, @album, @genre = nil
-      end
+      #rescue Exception => e
+      #  @title, @artist, @album, @genre = nil
+      #end
 
     end
 

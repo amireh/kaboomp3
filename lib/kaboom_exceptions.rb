@@ -4,4 +4,5 @@ module Pixy
   class InvalidTransition < Exception; end
   class InvalidView < Exception; end
   class InvalidFile < Exception; end
+	class InvalidPath < Exception; end
 end

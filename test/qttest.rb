@@ -1,5 +1,5 @@
 require 'rubygems'
-require 'qt'
+require 'Qt4'
 require 'qtuitools'
 require '../lib/utility'
 
