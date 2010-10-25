@@ -32,7 +32,7 @@ module Pixy
     include Pixy::Utility
 
     attr_reader :stats, :errors, :simulating
-    attr_accessor :tracking_errors, :tracking_stats
+    attr_accessor :tracking_errors, :tracking_stats, :showing_progress
     
     public
     
@@ -41,6 +41,7 @@ module Pixy
       
       @tracking_stats = true
       @tracking_errors = true
+      @showing_progress = true
       
       @simulating = false
       @errors = { :dest_exists => 0 }
@@ -125,7 +126,7 @@ module Pixy
     end
     
     def showing_progress?
-      false
+      @showing_progress
     end
     
     def find_nr_tracks(library)
