@@ -2,3 +2,4 @@
 * preview simulation
 * the actual organizing
 * interactive buttons should have their focus policies set to NONE
+* clean out resources
