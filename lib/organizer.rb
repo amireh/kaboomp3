@@ -123,7 +123,7 @@ module Pixy
     end
 
     def update_progress
-      Pixy::KaBoom.instance.ui[:controllers][:libraries].update_progress(@stepper, @step)
+      Pixy::Kaboomp3.instance.ui[:controllers][:libraries].update_progress(@stepper, @step)
     end
     
     def showing_progress?

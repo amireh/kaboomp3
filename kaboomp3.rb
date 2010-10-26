@@ -9,7 +9,7 @@ $LOAD_PATH << File.join(ENV['APP_ROOT'], 'app', 'models')
 require 'rubygems'
 require 'fileutils'
 require 'active_record'
-require 'qt4'
+require 'Qt4'
 require 'qtuitools'
 require 'kaboom_utility'
 require 'kaboom_exceptions'
@@ -17,7 +17,7 @@ require 'organizer'
 require "controller"
 
 module Pixy
-  class KaBoom
+  class Kaboomp3
     include Pixy::Utility
 
     @@_instance = nil
@@ -27,7 +27,7 @@ module Pixy
     public
     
     def self.instance
-      @@_instance = KaBoom.new if @@_instance.nil?
+      @@_instance = Kaboomp3.new if @@_instance.nil?
     
       @@_instance
     end
@@ -115,7 +115,7 @@ module Pixy
       setup
     end
     
-  end # class KaBoom
+  end # class Kaboomp3
 end # module Pixy
 
-Pixy::KaBoom.instance.run!
+Pixy::Kaboomp3.instance.run!

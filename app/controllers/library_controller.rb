@@ -345,7 +345,7 @@ module Pixy
   			@pbars[:preview].value = 0
   			
   			begin
-  	      @preview_stats = KaBoom.instance.organizer.simulate(library, temp)
+  	      @preview_stats = Kaboomp3.instance.organizer.simulate(library, temp)
   			rescue InvalidPath => e
           @dialogs[:retry_preview].informativeText = "" \
           "Please make sure you have chosen a valid library path " \

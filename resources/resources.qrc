@@ -8,6 +8,8 @@
   </qresource>
   <qresource prefix="logos">
     <file>images/logos/kaBoom_black.png</file>
+    <file>images/logos/white.png</file>
+    <file>images/logos/black.png</file>
     <file>images/logos/kaBoom_red.png</file>
   </qresource>
   <qresource prefix="220x220">

@@ -8,8 +8,8 @@ Dir.new(File.join(ENV['APP_ROOT'], "lib", "tasks")).entries.each do |rakefile|
   load rakefile unless (rakefile =~ /^(.)*.rake$/) == nil
 end
 
-desc "Pandemonium!"
+desc "KabooMP3!"
 task :run do |t, args|
-  require 'pandemonium'
-  Pixy::Pandemonium.new.run!
+  require 'kaboomp3'
+  Pixy::Kaboomp3.instance.run!
 end
