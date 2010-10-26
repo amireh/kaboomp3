@@ -1,11 +1,14 @@
 # RV1
   * (DONE) ability to delete a library
   * (DONE) preview simulation
-  * the actual organizing
+  * (DONE) the actual organizing
   * (DONE) interactive buttons should have their focus policies set to NONE
   * (DONE) clean out resources
   * (DONE) "choose library path" should default to existing library path otherwise current directory
   * (DONE) Organizer should obey library sorting preferences
+  * parse organizer stats and inform user
+  * clean up temp files on quit or entry
+  * clean up empty directories after organizing
 
 # RV2
   * implement varying sorting techniques: light, normal, aggressive

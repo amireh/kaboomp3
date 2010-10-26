@@ -47,7 +47,7 @@ module Pixy
     protected
     
     def setup
-
+      
       @ui = { 
         :qt => nil,
         :loader => nil,
@@ -112,9 +112,13 @@ module Pixy
     
     def initialize()
       super()
-      setup
+      
+      # BUGFIX: the unless? control is there to prevent components loaded in the setup() routine
+      # (such as controllers) from triggering a recursive referencing loop by calling 
+      # Kaboomp3.instance during their init routines
+      setup# unless setting_up?
     end
-    
+        
   end # class Kaboomp3
 end # module Pixy
 

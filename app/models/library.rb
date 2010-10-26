@@ -11,20 +11,9 @@ module Pixy
     ByArtistAndTitle=1
     ByAlbumAndTitle=2
     
-=begin
-    include DataMapper::Resource
-  
-    storage_names[:default] = 'libraries'
-
-    has n, :repositories
-    has n, :tracks
+    # invalid states
+    InvalidPath = 100
+    EmptyLibrary = 101
     
-    property :id, Serial
-    property :title, String, :length => 255, :default => "Untitled Library"
-    property :emblem, String, :required => false
-    
-    property :created_at, DateTime
-    property :created_on, Date
-=end
   end
 end

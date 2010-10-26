@@ -4,7 +4,6 @@ module Pixy
     attr_accessor :library
     attr_reader :state, :preview_stats
     
-    
     slots 'update_sample_path()',
           'choose_library_path()',
           'save_preferences()',
@@ -29,7 +28,7 @@ module Pixy
         :preview => @views[:master].findChild(Qt::StackedWidget, "viewPreview"),
         :actions => @views[:master].findChild(Qt::StackedWidget, "viewActions")
       })
-            
+
       # load our pages
       paths = { 
         :pages => {
@@ -41,7 +40,7 @@ module Pixy
           :preview => File.join(path_to("views"), "libraries", "_preview_actions.ui")          
         }
       }
-      
+
       # populate pages and load them
       paths[:pages].each_pair do |page, path|
 
@@ -288,7 +287,7 @@ module Pixy
         :naming => naming,
         :hard_copy => @radio_buttons[:storage][:hard_copy].checked?
       )
-      
+
     end
     
     def remove_library()
@@ -329,7 +328,15 @@ module Pixy
       end
     end
     
+    def do_organize
+      @organizer.organize(library)
+      
+      log @organizer.stats.inspect
+      log @organizer.errors.inspect
+    end
+    
     def do_preview
+      @organizer = Kaboomp3.instance.organizer      
       begin
         temp = File.join(ENV['APP_ROOT'], "tmp", "snapshot_#{Time.now.to_i}")
         FileUtils.mkdir_p(temp)
@@ -338,32 +345,40 @@ module Pixy
           @dialogs[:retry_preview].informativeText = "" \
           "Please make sure you that have write privileges to " \
           "the directory in which kaBoom resides, and try again. "          
-          raise PreviewFailed.new(true), "destination does not exist or is not writable!"
+          raise PreviewFailed, "destination does not exist or is not writable!"
         end
       
   			failed = false
   			@pbars[:preview].value = 0
   			
   			begin
-  	      @preview_stats = Kaboomp3.instance.organizer.simulate(library, temp)
-  			rescue InvalidPath => e
-          @dialogs[:retry_preview].informativeText = "" \
-          "Please make sure you have chosen a valid library path " \
-          "to organize, and try again."
+  	      @preview_stats, @preview_errors = @organizer.simulate(library, temp)
+  			rescue InvalidLibrary => e
+  			  # some informative error messages
+  			  if e.invalid_path?
+            @dialogs[:retry_preview].informativeText = "" \
+            "Please make sure you have chosen a valid library path " \
+            "to organize, and try again."
+          elsif e.empty_library?
+            @dialogs[:retry_preview].informativeText = "" \
+            "The directory you chose seems to not have any mp3 music " \
+            "files! Please choose another directory and try again."
+          end
   				raise PreviewFailed.new(true), "library path possibly nil? #{e.message}"
   			end
   			
   	  rescue PreviewFailed => e
 	      @dialogs[:retry_preview].show
-  	    @pbars[:preview].value = 100	      
+  	    @pbars[:preview].value = 100
+  	    log e.message
 	      return
       rescue Exception => e
+        # this is an unexpected issue
   		  @dialogs[:preview_failed].show
   	    @pbars[:preview].value = 100  		  
   	    log e.message
   	    return
       end
-      
 
       @fsm.rootPath = temp
       @tree.model = @fsm
@@ -375,8 +390,6 @@ module Pixy
       
       @pbars[:preview].value = 100
       puts @preview_stats.inspect
-      #return temp
     end
-    
   end # class LibraryController
 end # module Pixy
