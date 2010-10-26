@@ -5,7 +5,7 @@
   * (DONE) interactive buttons should have their focus policies set to NONE
   * (DONE) clean out resources
   * (DONE) "choose library path" should default to existing library path otherwise current directory
-  * Organizer should obey library sorting preferences
+  * (DONE) Organizer should obey library sorting preferences
 
 # RV2
   * implement varying sorting techniques: light, normal, aggressive
