@@ -24,15 +24,19 @@
 
 require 'rubygems'
 require 'id3lib'
-require 'kaboom_utility'
-require 'kaboom_exceptions'
+require 'kaboomp3/utility'
+require 'kaboomp3/exceptions'
 
 module Pixy
   class Organizer
     include Pixy::Utility
 
     attr_reader :stats, :errors, :simulating
-    attr_accessor :tracking_errors, :tracking_stats, :showing_progress, :library
+    attr_accessor :tracking_errors, 
+      :tracking_stats, 
+      :showing_progress, 
+      :library
+
     
     public
     
@@ -91,11 +95,19 @@ module Pixy
     def tracking_stats?
       return @tracking_stats
     end
-      
+
+    def update_me(target)
+      @update_target = target
+    end
+  
     private
     
 		def track_error(e)
-			@errors[e.class.to_s.to_sym] ||= { :count => 1, :message => e.message }
+			if @errors.has_key?(e.class.to_s.to_sym)
+			  @errors[e.class.to_s.to_sym][:count] += 1
+			else
+			  @errors[e.class.to_s.to_sym] = { :count => 1, :message => e.message }
+		  end
 		end
 		
     # returns a list of all the MP3 files in the given directory as Track objects
@@ -114,12 +126,14 @@ module Pixy
       tracks
     end
 
-    def update_progress
-      Pixy::Kaboomp3.instance.ui[:controllers][:libraries].update_progress(@stepper, @step)
-    end
-    
     def showing_progress?
       @showing_progress
+    end
+    
+
+    
+    def update_progress
+      @update_target.update_progress(@stepper / @step)
     end
     
     def find_nr_tracks(library)
@@ -128,7 +142,7 @@ module Pixy
       dirs = []
       dirs.push library.path
       
-      while !dirs.empty? do
+      until dirs.empty? do
         dir = dirs.pop # get the last directory we came across
         
         Dir.chdir(dir)
@@ -142,6 +156,8 @@ module Pixy
         
     # navigate library and clean up the tracks
     def process_library(library, dest_dir)
+      
+      @stats[:failures] = 0
       
 			raise InvalidLibrary.new(Library::InvalidPath) if library.path.nil? or File.zero?(library.path)
       
@@ -171,7 +187,7 @@ module Pixy
       dirs = []
       dirs.push library.path
       
-      while !dirs.empty? do
+      until dirs.empty? do
         dir = dirs.pop # get the last directory we came across
         
         Dir.chdir(dir)
@@ -199,8 +215,13 @@ module Pixy
               FileUtils.touch(dest[:path])
             else
               FileUtils.mv(track.filepath, dest[:path]) 
+              
+              #if (Dir.entries(File.dirname(track.filepath)) - %w[. ..]).empty?
+              #  puts "directory #{File.dirname(track.filepath)} is empty, removing it"
+              #  FileUtils.rmdir File.dirname(track.filepath)
+              #end
             end
-
+          
           rescue Exception => e
             #log "faced an issue: #{e.message}"
             @stats[:failures] += 1 if tracking_stats?
@@ -217,6 +238,9 @@ module Pixy
         Dir["*/"].each { |entry| dirs.push("#{Dir.pwd}/#{entry}") }
         
       end # while block
+      
+      cleanup_empty_dirs(library.path)
+      
     end # process_library
     
   end # class Organizer

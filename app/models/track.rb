@@ -86,7 +86,11 @@ module Pixy
 
         # clean up title field: remove trailing and leading whitespace, 
         # quotes, and brackets, and convert underscores into hyphens
-        @title.strip.gsub(/\.'"()/, '').gsub('_', ' ')
+        @title.strip.gsub(/\.'"()\\\//, '').gsub('_', ' ')
+        # strip out slashes from genres, artists, and albums, since they can be directories
+        @artist.strip.gsub(/\\\//, '')
+        @genre.strip.gsub(/\\\//, '')
+        @album.strip.gsub(/\\\//, '')
 
         # obey Library preferences regarding file names
         @title = case @library.naming 

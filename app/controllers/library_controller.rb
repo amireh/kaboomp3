@@ -153,18 +153,23 @@ module Pixy
       update
     end
     
-    def update_progress(stepper, step)
-      @pbars[:preview].value = (stepper / step)
+    def update_progress(percentage)
+      @pbars[:preview].value = percentage
       @ui[:qt].processEvents
     end
-    
+        
     protected
     
     def force_defaults
       
+      @buttons[:organize].enabled = false
+      
       @radio_buttons[:storage][:soft_copy].checked = true
       @radio_buttons[:naming][:by_title].checked = true
-      @buttons[:organize].enabled = false
+      
+      @check_boxes[:sorting][:by_genre].checked = false
+      @check_boxes[:sorting][:by_artist].checked = false
+      @check_boxes[:sorting][:by_album].checked = false
       
       @canvas.setCurrentWidget(@tabs[:preferences])
       @views[:actions].setCurrentWidget(@pages[:actions][:preferences])
@@ -329,14 +334,25 @@ module Pixy
     end
     
     def do_organize
-      @organizer.organize(library)
+      @organizer.organize(@library)
+      
+      @fsm.rootPath = @library.path
+      @tree.model = @fsm
+      @tree.rootIndex = @fsm.index(@library.path)
+      @tree.header.hideSection(1)
+      @tree.header.hideSection(2)
+      @tree.header.hideSection(3)
+      @tree.expandAll
       
       log @organizer.stats.inspect
       log @organizer.errors.inspect
     end
     
     def do_preview
-      @organizer = Kaboomp3.instance.organizer      
+      @organizer = Kaboomp3.instance.organizer
+      @organizer.showing_progress = true
+      @organizer.update_me(self)
+      
       begin
         temp = File.join(ENV['APP_ROOT'], "tmp", "snapshot_#{Time.now.to_i}")
         FileUtils.mkdir_p(temp)
@@ -352,7 +368,7 @@ module Pixy
   			@pbars[:preview].value = 0
   			
   			begin
-  	      @preview_stats, @preview_errors = @organizer.simulate(library, temp)
+  	      @preview_stats, @preview_errors = @organizer.simulate(@library, temp)
   			rescue InvalidLibrary => e
   			  # some informative error messages
   			  if e.invalid_path?

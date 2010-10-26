@@ -35,9 +35,9 @@
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>-103</y>
+        <y>-68</y>
         <width>620</width>
-        <height>674</height>
+        <height>639</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="gridLayout_7">
@@ -98,7 +98,7 @@ font-size: 18pt;</string>
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Lucida Grande'; font-size:13pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:10pt; color:#146b95;&quot;&gt;(select the directory where you store you music)&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:10pt; color:#146b95;&quot;&gt;(select the directory where you store your music)&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="textFormat">
               <enum>Qt::RichText</enum>
@@ -408,6 +408,9 @@ p, li { white-space: pre-wrap; }
              <layout class="QGridLayout" name="gridLayout_2">
               <item row="2" column="0">
                <widget class="QRadioButton" name="hardCopy">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
                   <horstretch>0</horstretch>
@@ -564,9 +567,15 @@ p, li { white-space: pre-wrap; }
              <property name="title">
               <string/>
              </property>
-             <layout class="QGridLayout" name="gridLayout_4">
-              <item row="0" column="0">
+             <layout class="QHBoxLayout" name="horizontalLayout">
+              <item>
                <widget class="QCheckBox" name="sortByGenre">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
                 <property name="text">
                  <string>Genre</string>
                 </property>
@@ -575,8 +584,14 @@ p, li { white-space: pre-wrap; }
                 </property>
                </widget>
               </item>
-              <item row="1" column="0">
+              <item>
                <widget class="QCheckBox" name="sortByArtist">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
                 <property name="text">
                  <string>Artist</string>
                 </property>
@@ -585,8 +600,14 @@ p, li { white-space: pre-wrap; }
                 </property>
                </widget>
               </item>
-              <item row="2" column="0">
+              <item>
                <widget class="QCheckBox" name="sortByAlbum">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
                 <property name="text">
                  <string>Album</string>
                 </property>
@@ -594,6 +615,19 @@ p, li { white-space: pre-wrap; }
                  <bool>true</bool>
                 </property>
                </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
               </item>
              </layout>
             </widget>

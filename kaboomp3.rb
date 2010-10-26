@@ -11,10 +11,10 @@ require 'fileutils'
 require 'active_record'
 require 'Qt4'
 require 'qtuitools'
-require 'kaboom_utility'
-require 'kaboom_exceptions'
-require 'organizer'
-require "controller"
+require 'kaboomp3/utility'
+require 'kaboomp3/exceptions'
+require 'kaboomp3/organizer'
+require 'controller'
 
 module Pixy
   class Kaboomp3
