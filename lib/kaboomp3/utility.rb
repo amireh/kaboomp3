@@ -57,24 +57,25 @@ module Pixy
     def cleanup_empty_dirs(root)
       # cleanup now-empty directories
       log "cleaning up empty directories"
-      Dir.glob("#{root}/*").each do |file|
-        if File.directory? file then
-          empty = true
-          Dir.glob("#{file}/**/*").each do |subfile|
-            unless File.directory? subfile then
-              empty = false
-              break
-            end
-          end
-        
-          if empty
-            puts "deleting #{file}"
-            FileUtils.rm_r(file)
-          end
-        
-        end
-              
-      end
+      recursive_rmdir(root)
+      #Dir.glob("#{root}/*").each do |file|
+      #  if File.directory? file then
+      #    empty = true
+      #    Dir.glob("#{file}/**/*").each do |subfile|
+      #      unless File.directory? subfile then
+      #        empty = false
+      #        break
+      #      end
+      #    end
+      #  
+      #    if empty
+      #      puts "deleting #{file}"
+      #      FileUtils.rm_r(file)
+      #    end
+      #  
+      #  end
+      #        
+      #end
       
       #2.times do
       #  Dir.glob("#{path}/**/*").each { |entry| 
@@ -85,5 +86,20 @@ module Pixy
       #  }
       #end
     end
+    
+    def recursive_rmdir(dir)
+
+      # find my children directories
+      Dir.glob("#{dir}/*").each { |file| recursive_rmdir(file) if File.directory? file }
+
+      # am I empty?
+      if Dir.glob("#{dir}/*").empty?
+        log "\tremoving empty directory #{dir}"
+        # delete me
+        FileUtils.rmdir(dir) rescue nil
+      end
+
+    end
+
   end # module Utility
 end # module Pixy

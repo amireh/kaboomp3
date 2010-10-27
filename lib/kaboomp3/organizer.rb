@@ -206,6 +206,7 @@ module Pixy
             dest[:dir] = File.join(dest[:dir], track.artist) if @library.sort_by_artist?
             dest[:dir] = File.join(dest[:dir], track.album) if @library.sort_by_album?
             dest[:path] = File.join(dest[:dir], track.title + '.mp3')
+            puts track.inspect if track.missing_tags?
           
             # don't do anything if destination is occupied
             raise DestinationExists, "#{dest[:path]}" if File::exists?(dest[:path]) 
@@ -215,11 +216,6 @@ module Pixy
               FileUtils.touch(dest[:path])
             else
               FileUtils.mv(track.filepath, dest[:path]) 
-              
-              #if (Dir.entries(File.dirname(track.filepath)) - %w[. ..]).empty?
-              #  puts "directory #{File.dirname(track.filepath)} is empty, removing it"
-              #  FileUtils.rmdir File.dirname(track.filepath)
-              #end
             end
           
           rescue Exception => e
