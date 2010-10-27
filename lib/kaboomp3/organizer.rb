@@ -161,7 +161,7 @@ module Pixy
       
 			raise InvalidLibrary.new(Library::InvalidPath) if library.path.nil? or File.zero?(library.path)
       
-      log "Organizer called for some blowing up action, about to start traversing directories in:"
+      log "Organizer called for some blowing up action, about to start traversing."
       log "Library: #{library.title} @ #{library.path}"
       
       if showing_progress?
@@ -206,7 +206,6 @@ module Pixy
             dest[:dir] = File.join(dest[:dir], track.artist) if @library.sort_by_artist?
             dest[:dir] = File.join(dest[:dir], track.album) if @library.sort_by_album?
             dest[:path] = File.join(dest[:dir], track.title + '.mp3')
-            #puts track.inspect if track.missing_tags?
           
             # don't do anything if destination is occupied
             raise DestinationExists, "#{dest[:path]}" if File::exists?(dest[:path]) 
@@ -235,9 +234,10 @@ module Pixy
         
       end # while block
       
+      # remove any now-empty directories
       cleanup_empty_dirs(library.path)
       
     end # process_library
-    
+   
   end # class Organizer
 end # module Pixy

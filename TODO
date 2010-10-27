@@ -7,8 +7,8 @@
   * (DONE) "choose library path" should default to existing library path otherwise current directory
   * (DONE) Organizer should obey library sorting preferences
   * parse organizer stats and inform user
-  * clean up temp files on quit or entry
-  * clean up empty directories after organizing
+  * (DONE) clean up temp files on quit or entry
+  * (DONE) clean up empty directories after organizing
 
 # RV2
   * implement varying sorting techniques: light, normal, aggressive

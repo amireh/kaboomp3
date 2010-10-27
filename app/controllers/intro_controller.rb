@@ -129,13 +129,12 @@ module Pixy
       end
       
       update
-      #switch_to(@pages[:list])
     end
     
     def show_library(title)
       
       @ui[:controllers][:libraries].library = Library.find_by_title(title)
-      log "Switching to library #{@ui[:controllers][:libraries].library.title}"
+      log "switching to library #{@ui[:controllers][:libraries].library.title}"
       transition(@ui[:controllers][:libraries])
       
     end
@@ -195,6 +194,7 @@ module Pixy
       # add label and button to our vertical layout
       entry[:layout].addWidget(entry[:label])
       entry[:layout].addWidget(entry[:button])
+      
       # add the vertical layout to the grid (grid contains 3 items in each row)
       @grid.layout.addLayout(
         entry[:layout], 

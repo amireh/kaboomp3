@@ -101,6 +101,10 @@ module Pixy
       controller.attach
     end
   
+    def cleanup
+      
+    end
+    
     protected
     
     # removes current view from display; called prior to a transition

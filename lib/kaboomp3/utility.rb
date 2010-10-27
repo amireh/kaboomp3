@@ -17,7 +17,7 @@ module Pixy
         @@logger = STDOUT
         #@@logger = File.open()
       	@@logger.write("+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\n")
-      	@@logger.write("+                               kaBoom                              +\n")
+      	@@logger.write("+                              kaBooMP3                             +\n")
       	@@logger.write("+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\n")
       	@@logger.flush
       	@@init = true

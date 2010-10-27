@@ -360,7 +360,7 @@ module Pixy
         if !File.exists?(temp) || !File.writable?(temp)
           @dialogs[:retry_preview].informativeText = "" \
           "Please make sure you that have write privileges to " \
-          "the directory in which kaBoom resides, and try again. "          
+          "the directory in which kaBoomp3 resides, and try again. "          
           raise PreviewFailed, "destination does not exist or is not writable!"
         end
       

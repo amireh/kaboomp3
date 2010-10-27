@@ -9,22 +9,6 @@ module Pixy
 		include Pixy::Utility
     belongs_to :album
     belongs_to :library
-=begin
-    include DataMapper::Resource
-  
-    storage_names[:default] = 'tracks'
-    
-    belongs_to :album
-    belongs_to :library
-    
-    property :id, Serial
-    property :title, String, :length => 255, :default => "Untitled"
-    property :codec, String, :default => "mp3"
-    property :signature, String
-
-    property :created_at, DateTime
-    property :created_on, Date
-=end
 
     attr_reader :title, :album, :artist, :genre, :filepath
     
@@ -84,8 +68,7 @@ module Pixy
           @genre = ID3Lib::Info::Genres[tag.genre.gsub(/[\(\)]/, '').to_i]
         end
         
-        # if we have a string genre, assign it, otherwise, force default
-        #@genre ||= tag.genre
+        # force default if we haven't retrieved a proper genre
         @genre = @@defaults[:genre] if @genre.nil? or @genre.is_binary_data?
 
         # clean up title field: remove trailing and leading whitespace, 

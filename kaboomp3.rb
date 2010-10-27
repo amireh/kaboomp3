@@ -127,6 +127,7 @@ module Pixy
     
     def cleanup()
       log "cleaning up my mess..."
+      @ui[:controllers].each_pair { |k, controller| controller.cleanup }
       FileUtils.rm_rf(Dir.glob(File.join(SnapshotsDestination,"*")))
       log "oke, bye!"
     end
