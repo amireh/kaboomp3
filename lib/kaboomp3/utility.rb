@@ -1,3 +1,9 @@
+class String
+  def capitalize_every_word!
+    self.replace(split.each { |word| word.capitalize! }.join(" "))
+  end
+end
+
 module Pixy
   module Utility
     @@init = false

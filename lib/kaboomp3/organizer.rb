@@ -206,7 +206,7 @@ module Pixy
             dest[:dir] = File.join(dest[:dir], track.artist) if @library.sort_by_artist?
             dest[:dir] = File.join(dest[:dir], track.album) if @library.sort_by_album?
             dest[:path] = File.join(dest[:dir], track.title + '.mp3')
-            puts track.inspect if track.missing_tags?
+            #puts track.inspect if track.missing_tags?
           
             # don't do anything if destination is occupied
             raise DestinationExists, "#{dest[:path]}" if File::exists?(dest[:path]) 

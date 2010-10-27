@@ -53,6 +53,10 @@ module Pixy
       return "Track: #{@title}, by #{@artist}, from the album #{@album} (#{@genre})"
     end
     
+    def missing_tags?
+      true if @@defaults.value?(@artist) || @@defaults.value?(@album) || @@defaults.value?(@genre)
+    end
+    
     protected
     
     # parses ID3 tags
@@ -66,7 +70,7 @@ module Pixy
 
         @title = tag.title
         # force default if title is missing in tag
-        @title = File::basename(@filepath, "mp3") if @title.nil? or @title.strip.nil? or @title.is_binary_data?
+        @title = File::basename(@filepath, ".mp3") if @title.nil? or @title.strip.nil? or @title.is_binary_data?
   
         @album = tag.album
         @album = @@defaults[:album] if @album.nil? or @album.strip.nil? or @album.empty? or @album.is_binary_data?
@@ -86,12 +90,11 @@ module Pixy
 
         # clean up title field: remove trailing and leading whitespace, 
         # quotes, and brackets, and convert underscores into hyphens
-        @title.strip.gsub(/\.'"()\\\//, '').gsub('_', ' ')
+        @title = @title.strip.gsub(/[.\\\/]/, '').gsub('_', ' ')
+        
         # strip out slashes from genres, artists, and albums, since they can be directories
-        @artist.strip.gsub(/\\\//, '')
-        @genre.strip.gsub(/\\\//, '')
-        @album.strip.gsub(/\\\//, '')
-
+        [@artist, @genre, @album].each { |tag| tag.gsub!(/\\\//, '') }
+       
         # obey Library preferences regarding file names
         @title = case @library.naming 
         when Library::ByTitle
@@ -103,13 +106,11 @@ module Pixy
         end
         
         # capitalize each word of each field
-        @genre = @genre.downcase.split.each { |word| word.capitalize! }.join(" ")
-        @title = @title.split.each { |word| word.capitalize! }.join(" ")
-        @album = @album.split.each { |word| word.capitalize! }.join(" ")
-        @artist = @artist.split.each { |word| word.capitalize! }.join(" ")
+        @genre.downcase!
+        [@genre, @title, @album, @artist].each { |tag| tag.capitalize_every_word! }
     
       #rescue Exception => e
-      #  @title, @artist, @album, @genre = nil
+        #@title, @artist, @album, @genre = nil
       #end
 
     end
