@@ -354,7 +354,7 @@ module Pixy
       @organizer.update_me(self)
       
       begin
-        temp = File.join(ENV['APP_ROOT'], "tmp", "snapshot_#{Time.now.to_i}")
+        temp = File.join(Kaboomp3::SnapshotsDestination, "snapshot_#{Time.now.to_i}")
         FileUtils.mkdir_p(temp)
       
         if !File.exists?(temp) || !File.writable?(temp)

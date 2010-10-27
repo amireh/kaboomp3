@@ -17,10 +17,14 @@ require 'kaboomp3/organizer'
 require 'controller'
 
 module Pixy
-  class Kaboomp3
+  class Kaboomp3 < Qt::Object
     include Pixy::Utility
 
+    SnapshotsDestination = File.join(ENV['APP_ROOT'], "tmp")
+    
     @@_instance = nil
+    
+    slots 'cleanup()'
     
     attr_reader :ui, :organizer
 
@@ -105,6 +109,8 @@ module Pixy
         :libraries => LibraryController.new(@ui, @ui[:views][:libraries])
       }
       
+      connect(@ui[:qt], SIGNAL('lastWindowClosed()'), self, SLOT('cleanup()'))
+      
       log "set up!"
     end
     
@@ -118,7 +124,12 @@ module Pixy
       # Kaboomp3.instance during their init routines
       setup# unless setting_up?
     end
-        
+    
+    def cleanup()
+      log "cleaning up my mess..."
+      FileUtils.rm_rf(Dir.glob(File.join(SnapshotsDestination,"*")))
+      log "oke, bye!"
+    end
   end # class Kaboomp3
 end # module Pixy
 
